@@ -1723,10 +1723,9 @@ struct ClassFamilyMask
 #define MAX_SPELL_TOTEMS 2
 #define MAX_SPELL_TOTEM_CATEGORIES 2
 
-// SpellAuraOptions.dbc
 struct SpellAuraOptionsEntry
 {
-    //uint32    Id;                                         // 0       m_ID
+    //uint32    Id;                                           // 0       m_ID
     uint32    StackAmount;                                  // 1       m_cumulativeAura
     uint32    procChance;                                   // 2       m_procChance
     uint32    procCharges;                                  // 3       m_procCharges
@@ -1839,10 +1838,9 @@ struct SpellDurationEntry
     int32     Duration[3];                                  // 1-3      m_duration, m_durationPerLevel, m_maxDuration
 };
 
-// SpellEffect.dbc
 struct SpellEffectEntry
 {
-    //uint32    Id;                                         // 0        m_ID
+    //uint32    Id;                                           // 0        m_ID
     uint32    Effect;                                       // 1        m_effect
     float     EffectMultipleValue;                          // 2        m_effectAmplitude
     uint32    EffectApplyAuraName;                          // 3        m_effectAura
@@ -2069,7 +2067,6 @@ struct SpellTotemsEntry
     uint32    Totem[MAX_SPELL_TOTEMS];                      // 3 4      m_totem
 };
 
-// Spell.dbc
 struct SpellEntry
 {
     uint32    Id;                                           // 0        m_ID
@@ -2092,16 +2089,16 @@ struct SpellEntry
     uint32    SpellVisual[2];                               // 17-18    m_spellVisualID
     uint32    SpellIconID;                                  // 19       m_spellIconID
     uint32    activeIconID;                                 // 20       m_activeIconID
-    DBCString SpellName;                                    // 21       m_name_lang
-    DBCString Rank;                                         // 22       m_nameSubtext_lang
-    //DBCString Description;                                // 23       m_description_lang not used
-    //DBCString ToolTip;                                    // 24       m_auraDescription_lang not used
+    char*     SpellName[1];                                 // 21       m_name_lang
+    char*     Rank[1];                                      // 22       m_nameSubtext_lang
+    //char*      Description;                               // 23       m_description_lang not used
+    //char*      ToolTip;                                   // 24       m_auraDescription_lang not used
     uint32    SchoolMask;                                   // 25       m_schoolMask
     uint32    runeCostID;                                   // 26       m_runeCostID
     //uint32    spellMissileID;                             // 27       m_spellMissileID not used
     //uint32  spellDescriptionVariableID;                   // 28       m_spellDescriptionVariableID, 3.2.0
-    uint32  SpellDifficultyId;                              // 29       m_spellDifficultyID - id from SpellDifficulty.dbc
-    //float unk_f1;                                         // 30
+    uint32 SpellDifficultyId;                               // 29       m_spellDifficultyID - id from SpellDifficulty.dbc
+    //float unk_f1;                                         // 30       unk1
     uint32 SpellScalingId;                                  // 31       SpellScaling.dbc
     uint32 SpellAuraOptionsId;                              // 32       SpellAuraOptions.dbc
     uint32 SpellAuraRestrictionsId;                         // 33       SpellAuraRestrictions.dbc
@@ -2109,7 +2106,7 @@ struct SpellEntry
     uint32 SpellCategoriesId;                               // 35       SpellCategories.dbc
     uint32 SpellClassOptionsId;                             // 36       SpellClassOptions.dbc
     uint32 SpellCooldownsId;                                // 37       SpellCooldowns.dbc
-    //uint32 unkIndex7;                                     // 38       all zeros...
+    //uint32 unkIndex7;                                     // 38       unk2, all zeros...
     uint32 SpellEquippedItemsId;                            // 39       SpellEquippedItems.dbc
     uint32 SpellInterruptsId;                               // 40       SpellInterrupts.dbc
     uint32 SpellLevelsId;                                   // 41       SpellLevels.dbc
@@ -2118,7 +2115,7 @@ struct SpellEntry
     uint32 SpellShapeshiftId;                               // 44       SpellShapeshift.dbc
     uint32 SpellTargetRestrictionsId;                       // 45       SpellTargetRestrictions.dbc
     uint32 SpellTotemsId;                                   // 46       SpellTotems.dbc
-    //uint32 ResearchProject;                               // 47       ResearchProject.dbc
+    //uint32 ResearchProjectId;                             // 47       ResearchProject.dbc
 
     // helpers
     int32 CalculateSimpleValue(SpellEffectIndex eff) const;

@@ -362,7 +362,7 @@ struct npc_dragonmaw_peonAI : public ScriptedAI
                     // Workaround for broken function GetGameObject
                     if (!pMutton)
                     {
-                        const SpellEntry* pSpell = GetSpellStore()->LookupEntry(SPELL_SERVING_MUTTON);
+                        const SpellEntry* pSpell = GetSpellStore()->LookupEntry<SpellEntry>(SPELL_SERVING_MUTTON);
 
                         uint32 uiGameobjectEntry = pSpell->GetEffectMiscValue(EFFECT_INDEX_0);
 

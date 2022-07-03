@@ -1816,7 +1816,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                     if (reader.eof())                       // : must be
                         return false;
 
-                    linkedSpell = sSpellStore.LookupEntry(atoi(buffer));
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(atoi(buffer));
                     if (!linkedSpell)
                         return false;
 
@@ -1843,7 +1843,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                     if (!talentInfo)
                         return false;
 
-                    linkedSpell = sSpellStore.LookupEntry(talentInfo->RankID[0]);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(talentInfo->RankID[0]);
                     if (!linkedSpell)
                         return false;
 
@@ -1870,7 +1870,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                         spellid += c - '0';
                         c = reader.peek();
                     }
-                    linkedSpell = sSpellStore.LookupEntry(spellid);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(spellid);
                     if (!linkedSpell)
                         return false;
                 }
@@ -1889,7 +1889,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                         spellid += c - '0';
                         c = reader.peek();
                     }
-                    linkedSpell = sSpellStore.LookupEntry(spellid);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(spellid);
                     if (!linkedSpell)
                         return false;
                 }
@@ -1939,7 +1939,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                     if (!glyph)
                         return false;
 
-                    linkedSpell = sSpellStore.LookupEntry(glyph->SpellId);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(glyph->SpellId);
 
                     if (!linkedSpell)
                         return false;

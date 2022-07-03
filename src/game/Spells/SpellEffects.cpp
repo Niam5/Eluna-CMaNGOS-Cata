@@ -2051,7 +2051,7 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                 {
                     if (m_caster->GetTypeId() == TYPEID_PLAYER && unitTarget)
                     {
-                        if (const SpellEntry* pSpell = sSpellStore.LookupEntry(46022))
+                        if (const SpellEntry* pSpell = sSpellTemplate.LookupEntry<SpellEntry>(46022))
                         {
                             m_caster->CastSpell(unitTarget, pSpell, TRIGGERED_OLD_TRIGGERED);
                             SpellEffectEntry const* killSpellEffect = pSpell->GetSpellEffect(EFFECT_INDEX_0);
@@ -2079,7 +2079,7 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
                         return;
 
-                    if (const SpellEntry* pSpell = sSpellStore.LookupEntry(45991))
+                    if (const SpellEntry* pSpell = sSpellTemplate.LookupEntry<SpellEntry>(45991))
                     {
                         unitTarget->CastSpell(unitTarget, pSpell, TRIGGERED_OLD_TRIGGERED);
                         ((Creature*)unitTarget)->ForcedDespawn(m_duration);
@@ -2117,7 +2117,7 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                         case 74904: spellId = 74905; break;
                     }
 
-                    if (const SpellEntry* pSpell = sSpellStore.LookupEntry(spellId))
+                    if (const SpellEntry* pSpell = sSpellTemplate.LookupEntry<SpellEntry>(spellId))
                     {
                         unitTarget->CastSpell(m_caster, spellId, TRIGGERED_OLD_TRIGGERED);
 
@@ -2188,12 +2188,12 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
                         return;
 
-                    if (const SpellEntry* pSpell = sSpellStore.LookupEntry(46486))
+                    if (const SpellEntry* pSpell = sSpellTemplate.LookupEntry<SpellEntry>(46486))
                     {
                         m_caster->CastSpell(unitTarget, pSpell, TRIGGERED_OLD_TRIGGERED);
 
                         if (SpellEffectEntry const* pSpellEffect = pSpell->GetSpellEffect(EFFECT_INDEX_0))
-                            if (const SpellEntry *pSpellCredit = sSpellStore.LookupEntry(pSpellEffect->EffectTriggerSpell))
+                            if (const SpellEntry *pSpellCredit = sSpellTemplate.LookupEntry<SpellEntry>(pSpellEffect->EffectTriggerSpell))
                                 if(SpellEffectEntry const* pSpellCreditEffect = pSpellCredit->GetSpellEffect(EFFECT_INDEX_0))
                                     ((Player*)m_caster)->KilledMonsterCredit(pSpellCreditEffect->EffectMiscValue);
 
@@ -2400,7 +2400,7 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                     // for sizeof(spellCredit)
                     for (int i = 0; i < 4; ++i)
                     {
-                        const SpellEntry* pSpell = sSpellStore.LookupEntry(spellCredit[i]);
+                        const SpellEntry* pSpell = sSpellTemplate.LookupEntry<SpellEntry>(spellCredit[i]);
 
                         if (pSpell->GetEffectMiscValue(EFFECT_INDEX_0) == unitTarget->GetEntry())
                         {
@@ -3616,7 +3616,7 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                         if (pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                             continue;
 
-                        SpellEntry const* combatEntry = sSpellStore.LookupEntry(pEnchant->spellid[s]);
+                        SpellEntry const* combatEntry = sSpellTemplate.LookupEntry<SpellEntry>(pEnchant->spellid[s]);
                         if (!combatEntry || combatEntry->GetDispel() != DISPEL_POISON)
                             continue;
 
@@ -3778,7 +3778,7 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                         return;
 
                     uint32 spell_id = m_currentBasePoints[effect->EffectIndex];
-                    SpellEntry const* spell_proto = sSpellStore.LookupEntry(spell_id);
+                    SpellEntry const* spell_proto = sSpellTemplate.LookupEntry<SpellEntry>(spell_id);
                     if (!spell_proto)
                         return;
 
@@ -4152,7 +4152,7 @@ void Spell::EffectTriggerSpellWithValue(SpellEffectEntry const* effect)
     uint32 triggered_spell_id = effect->EffectTriggerSpell;
 
     // normal case
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(triggered_spell_id);
 
     if (!spellInfo)
     {
@@ -4167,7 +4167,7 @@ void Spell::EffectTriggerSpellWithValue(SpellEffectEntry const* effect)
 void Spell::EffectTriggerRitualOfSummoning(SpellEffectEntry const* effect)
 {
     uint32 triggered_spell_id = effect->EffectTriggerSpell;
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry( triggered_spell_id );
+    SpellEntry const *spellInfo = sSpellTemplate.LookupEntry<SpellEntry>( triggered_spell_id );
 
     if (!spellInfo)
     {
@@ -4220,7 +4220,7 @@ void Spell::EffectForceCast(SpellEffectEntry const* effect)
     uint32 triggered_spell_id = effect->EffectTriggerSpell;
 
     // normal case
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(triggered_spell_id);
 
     if (!spellInfo)
     {
@@ -4234,7 +4234,7 @@ void Spell::EffectForceCast(SpellEffectEntry const* effect)
     if (m_caster->IsVehicle() && m_caster->GetVehicleInfo()->HasOnBoard(unitTarget) &&
         effect->EffectImplicitTargetA == TARGET_MASTER)
     {
-        if (sSpellStore.LookupEntry(basePoints))
+        if (sSpellTemplate.LookupEntry<SpellEntry>(basePoints))
             m_caster->RemoveAurasDueToSpell(basePoints);
     }
 
@@ -4271,7 +4271,7 @@ void Spell::EffectTriggerSpell(SpellEffectEntry const* effect)
                 return;
 
             uint32 spellId = 1784;
-            SpellEntry const* spellEntry = sSpellStore.LookupEntry(spellId);
+            SpellEntry const* spellEntry = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
             if (spellEntry)
             {
                 Player* playerTarget = static_cast<Player*>(unitTarget);
@@ -4327,7 +4327,7 @@ void Spell::EffectTriggerSpell(SpellEffectEntry const* effect)
     }
 
     // normal case
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(triggered_spell_id);
     if (!spellInfo)
     {
         // No previous Effect might have started a script
@@ -4386,7 +4386,7 @@ void Spell::EffectTriggerMissileSpell(SpellEffectEntry const* effect)
     uint32 triggered_spell_id = effect->EffectTriggerSpell;
 
     // normal case
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(triggered_spell_id);
 
     if (!spellInfo)
     {
@@ -5278,7 +5278,7 @@ void Spell::EffectEnergize(SpellEffectEntry const* effect)
                 if (itr->second & (ELIXIR_UNSTABLE_MASK | ELIXIR_SHATTRATH_MASK))
                     continue;
 
-                SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
+                SpellEntry const *spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(itr->first);
                 if (spellInfo && (spellInfo->GetSpellLevel() < m_spellInfo->GetSpellLevel() || spellInfo->GetSpellLevel() > unitTarget->GetLevel()))
                     continue;
 
@@ -6273,7 +6273,7 @@ bool Spell::DoSummonVehicle(CreatureSummonPositions& list, SummonPropertiesEntry
     //spawnCreature->SetLevel(level); // Do we need to set level for vehicles?
 
     // Board the caster right after summoning
-    SpellEntry const* controlSpellEntry = sSpellStore.LookupEntry(effect->CalculateSimpleValue());
+    SpellEntry const* controlSpellEntry = sSpellTemplate.LookupEntry<SpellEntry>(effect->CalculateSimpleValue());
     if (controlSpellEntry && IsSpellHaveAura(controlSpellEntry, SPELL_AURA_CONTROL_VEHICLE))
         m_caster->CastSpell(spawnCreature, controlSpellEntry, TRIGGERED_OLD_TRIGGERED);
     else
@@ -6732,7 +6732,7 @@ void Spell::EffectEnchantItemTmp(SpellEffectEntry const* effect)
                 return;
         }
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell_id);
+        SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spell_id);
         if (!spellInfo)
         {
             sLog.outError("Spell::EffectEnchantItemTmp: unknown spell id %i", spell_id);
@@ -7045,7 +7045,7 @@ void Spell::EffectLearnPetSpell(SpellEffectEntry const* effect)
     if (!pet->IsAlive())
         return;
 
-    SpellEntry const *learn_spellproto = sSpellStore.LookupEntry(effect->EffectTriggerSpell);
+    SpellEntry const *learn_spellproto = sSpellTemplate.LookupEntry<SpellEntry>(effect->EffectTriggerSpell);
     if(!learn_spellproto)
         return;
 
@@ -8301,7 +8301,7 @@ void Spell::EffectScriptEffect(SpellEffectEntry const* effect)
 
                     Creature* pTarget = (Creature*)unitTarget;
 
-                    if (const SpellEntry *pSpell = sSpellStore.LookupEntry(effect->CalculateSimpleValue()))
+                    if (const SpellEntry *pSpell = sSpellTemplate.LookupEntry<SpellEntry>(effect->CalculateSimpleValue()))
                     {
                         // if we used item at least once...
                         if (pTarget->IsTemporarySummon() && int32(pTarget->GetEntry()) == pSpell->GetEffectMiscValue(SpellEffectIndex(effect->EffectIndex)))
@@ -8353,7 +8353,7 @@ void Spell::EffectScriptEffect(SpellEffectEntry const* effect)
                     if (!((Creature*)m_caster)->IsTemporarySummon())
                         return;
 
-                    if (const SpellEntry *pSpell = sSpellStore.LookupEntry(effect->CalculateSimpleValue()))
+                    if (const SpellEntry *pSpell = sSpellTemplate.LookupEntry<SpellEntry>(effect->CalculateSimpleValue()))
                     {
                         // all ok, so make summoner cast the quest complete
                         if (Unit* pSummoner = m_caster->GetSummoner())
@@ -9047,7 +9047,7 @@ void Spell::EffectScriptEffect(SpellEffectEntry const* effect)
                         return;
 
                     // Summon Nass
-                    if (const SpellEntry* pSpell = sSpellStore.LookupEntry(51865))
+                    if (const SpellEntry* pSpell = sSpellTemplate.LookupEntry<SpellEntry>(51865))
                     {
                         // Only if he is not already there
                         if (!m_caster->FindGuardianWithEntry(pSpell->GetEffectMiscValue(EFFECT_INDEX_0)))
@@ -9086,7 +9086,7 @@ void Spell::EffectScriptEffect(SpellEffectEntry const* effect)
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    if (const SpellEntry* pSpell = sSpellStore.LookupEntry(51865))
+                    if (const SpellEntry* pSpell = sSpellTemplate.LookupEntry<SpellEntry>(51865))
                     {
                         // Is this all to be done at completion?
                         if (Pet* pPet = m_caster->FindGuardianWithEntry(pSpell->GetEffectMiscValue(EFFECT_INDEX_0)))
@@ -9371,7 +9371,7 @@ void Spell::EffectScriptEffect(SpellEffectEntry const* effect)
                         unitTarget->RemoveAurasDueToSpell(62239);
                     else
                     {
-                        uint32 stackAmount = urand(1, GetSpellStore()->LookupEntry(62239)->GetStackAmount());
+                        uint32 stackAmount = urand(1, GetSpellStore()->LookupEntry<SpellEntry>(62239)->GetStackAmount());
 
                         for (uint8 i = 0; i < stackAmount; ++i)
                             unitTarget->CastSpell(unitTarget, 62239, TRIGGERED_OLD_TRIGGERED);
@@ -10414,7 +10414,7 @@ void Spell::EffectScriptEffect(SpellEffectEntry const* effect)
                     if ((*itr)->GetEffIndex() != EFFECT_INDEX_2 || !IsSealSpell((*itr)->GetSpellProto()))
                         continue;
                     spellId2 = (*itr)->GetModifier()->m_amount;
-                    SpellEntry const* judge = sSpellStore.LookupEntry(spellId2);
+                    SpellEntry const* judge = sSpellTemplate.LookupEntry<SpellEntry>(spellId2);
                     if (!judge)
                         continue;
                     break;
@@ -11513,7 +11513,7 @@ void Spell::EffectDestroyAllTotems(SpellEffectEntry const* /*effect*/)
             if (damage)
             {
                 uint32 spell_id = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
-                if (SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell_id))
+                if (SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spell_id))
                 {
                     uint32 manacost = m_caster->GetCreateMana() * spellInfo->GetManaCostPercentage() / 100;
                     mana += manacost * damage / 100;
@@ -11889,7 +11889,7 @@ void Spell::EffectStealBeneficialBuff(SpellEffectEntry const* effect)
             data << uint32(count);                   // count
             for (SuccessList::iterator j = success_list.begin(); j != success_list.end(); ++j)
             {
-                SpellEntry const* spellInfo = sSpellStore.LookupEntry(j->first);
+                SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(j->first);
                 data << uint32(spellInfo->Id);       // Spell Id
                 data << uint8(0);                    // 0 - steals !=0 transfers
                 unitTarget->RemoveAurasDueToSpellBySteal(spellInfo->Id, j->second, m_caster);
@@ -12227,7 +12227,7 @@ void Spell::EffectCancelAura(SpellEffectEntry const* effect)
 
     uint32 spellId = effect->EffectTriggerSpell;
 
-    if (!sSpellStore.LookupEntry(spellId))
+    if (!sSpellTemplate.LookupEntry<SpellEntry>(spellId))
     {
         sLog.outError("Spell::EffectCancelAura: spell %u doesn't exist", spellId);
         return;

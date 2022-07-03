@@ -782,7 +782,6 @@ class ObjectMgr
         void LoadQuestPhaseMaps();
 
         void LoadNPCSpellClickSpells();
-        void LoadSpellTemplate();
         void LoadCreatureTemplateSpells();
 
         void LoadGameTele();
@@ -791,9 +790,9 @@ class ObjectMgr
 
         void LoadGossipMenus();
 
-        //void LoadSpellTemplate();
         void LoadDungeonEncounters();
         void LoadAreaGroups();
+        void LoadSpellTemplate();
         void LoadSQLDBCs();
 
         void LoadVendorTemplates();

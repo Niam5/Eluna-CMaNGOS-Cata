@@ -1,1 +1,0 @@
-ALTER TABLE db_version CHANGE COLUMN required_c0000_01_mangos_initial required_c0000_01_mangos_initial bit;

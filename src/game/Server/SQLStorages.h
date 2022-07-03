@@ -33,13 +33,17 @@ extern SQLStorage sWorldTemplate;
 extern SQLStorage sConditionStorage;
 extern SQLStorage sDungeonEncounterStore;
 extern SQLStorage sAreaGroupStore;
+extern SQLStorage sSpellAuraOptionsStore;
+extern SQLStorage sSpellEffectStore;
+extern SQLStorage sSpellTemplate;
 
-extern SQLHashStorage sSpellTemplate;
 extern SQLHashStorage sGOStorage;
 extern SQLHashStorage sGameObjectDataAddonStorage;
 extern SQLHashStorage sCreatureTemplateSpellsStorage;
 
 extern SQLMultiStorage sVehicleAccessoryStorage;
 extern SQLMultiStorage sSpellScriptTargetStorage;
+
+SQLStorage                 const* GetSpellStore();
 
 #endif

@@ -2461,7 +2461,7 @@ class Player : public Unit
             auto spellCDItr = m_cooldownMap.begin();
             while (spellCDItr != m_cooldownMap.end())
             {
-                SpellEntry const* entry = sSpellStore.LookupEntry(spellCDItr->first);
+                SpellEntry const* entry = sSpellTemplate.LookupEntry<SpellEntry>(spellCDItr->first);
                 if (entry && check(*entry))
                 {
                     SendClearCooldown(spellCDItr->first, this);

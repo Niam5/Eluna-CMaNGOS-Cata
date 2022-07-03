@@ -20,6 +20,7 @@
 #include "DBCStructure.h"
 #include "DBCStores.h"
 #include "Globals/SharedDefines.h"
+#include "Server/SQLStorages.h"
 
 int32 SpellEntry::CalculateSimpleValue(SpellEffectIndex eff) const
 {
@@ -40,7 +41,7 @@ ClassFamilyMask const& SpellEntry::GetEffectSpellClassMask(SpellEffectIndex eff)
 
 SpellAuraOptionsEntry const* SpellEntry::GetSpellAuraOptions() const
 {
-    return SpellAuraOptionsId ? sSpellAuraOptionsStore.LookupEntry(SpellAuraOptionsId) : NULL;
+    return SpellAuraOptionsId ? sSpellAuraOptionsStore.LookupEntry<SpellAuraOptionsEntry>(SpellAuraOptionsId) : NULL;
 }
 
 SpellAuraRestrictionsEntry const* SpellEntry::GetSpellAuraRestrictions() const

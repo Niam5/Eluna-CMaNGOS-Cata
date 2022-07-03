@@ -172,18 +172,15 @@ DBCStorage <SoundEntriesEntry> sSoundEntriesStore(SoundEntriesfmt);
 
 DBCStorage <SpellItemEnchantmentEntry> sSpellItemEnchantmentStore(SpellItemEnchantmentfmt);
 DBCStorage <SpellItemEnchantmentConditionEntry> sSpellItemEnchantmentConditionStore(SpellItemEnchantmentConditionfmt);
-DBCStorage <SpellEntry> sSpellStore(SpellEntryfmt);
 SpellCategoryStore sSpellCategoryStore;
 ItemSpellCategoryStore sItemSpellCategoryStore;
 PetFamilySpellsStore sPetFamilySpellsStore;
 
-DBCStorage <SpellAuraOptionsEntry> sSpellAuraOptionsStore(SpellAuraOptionsEntryfmt);
 DBCStorage <SpellAuraRestrictionsEntry> sSpellAuraRestrictionsStore(SpellAuraRestrictionsEntryfmt);
 DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellCastingRequirementsEntryfmt);
 DBCStorage <SpellCategoriesEntry> sSpellCategoriesStore(SpellCategoriesEntryfmt);
 DBCStorage <SpellClassOptionsEntry> sSpellClassOptionsStore(SpellClassOptionsEntryfmt);
 DBCStorage <SpellCooldownsEntry> sSpellCooldownsStore(SpellCooldownsEntryfmt);
-DBCStorage <SpellEffectEntry> sSpellEffectStore(SpellEffectEntryfmt);
 DBCStorage <SpellEquippedItemsEntry> sSpellEquippedItemsStore(SpellEquippedItemsEntryfmt);
 DBCStorage <SpellInterruptsEntry> sSpellInterruptsStore(SpellInterruptsEntryfmt);
 DBCStorage <SpellLevelsEntry> sSpellLevelsStore(SpellLevelsEntryfmt);
@@ -587,19 +584,16 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSkillLineAbilityStore,    dbcPath,"SkillLineAbility.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSkillRaceClassInfoStore,  dbcPath,"SkillRaceClassInfo.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSoundEntriesStore,        dbcPath,"SoundEntries.dbc");
-    LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellStore,               dbcPath,"Spell.dbc");
 
-    LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellAuraOptionsStore,    dbcPath,"SpellAuraOptions.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellAuraRestrictionsStore, dbcPath,"SpellAuraRestrictions.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellCastingRequirementsStore, dbcPath,"SpellCastingRequirements.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellCategoriesStore,     dbcPath,"SpellCategories.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellClassOptionsStore,   dbcPath,"SpellClassOptions.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellCooldownsStore,      dbcPath,"SpellCooldowns.dbc");
-    LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellEffectStore,         dbcPath,"SpellEffect.dbc");
 
-    for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
+    for(uint32 i = 1; i < sSpellTemplate.GetMaxEntry(); ++i)
     {
-        if(SpellEntry const * spell = sSpellStore.LookupEntry(i))
+        if(SpellEntry const * spell = sSpellTemplate.LookupEntry<SpellEntry>(i))
         {
             if(SpellCategoriesEntry const* category = spell->GetSpellCategories())
                 if(uint32 cat = category->Category)
@@ -613,9 +607,9 @@ void LoadDBCStores(const std::string& dataPath)
         }
     }
 
-    for(uint32 i = 1; i < sSpellEffectStore.GetNumRows(); ++i)
+    for(uint32 i = 1; i < sSpellEffectStore.GetMaxEntry(); ++i)
     {
-        if (SpellEffectEntry const *spellEffect = sSpellEffectStore.LookupEntry(i))
+        if (SpellEffectEntry const *spellEffect = sSpellEffectStore.LookupEntry<SpellEffectEntry>(i))
         {
             switch (spellEffect->EffectApplyAuraName)
             {
@@ -649,7 +643,7 @@ void LoadDBCStores(const std::string& dataPath)
         if(!skillLine)
             continue;
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(skillLine->spellId);
+        SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(skillLine->spellId);
         if (spellInfo && (spellInfo->Attributes & (SPELL_ATTR_ABILITY | SPELL_ATTR_PASSIVE | SPELL_ATTR_HIDDEN_CLIENTSIDE | SPELL_ATTR_HIDE_IN_COMBAT_LOG)) == (SPELL_ATTR_ABILITY | SPELL_ATTR_PASSIVE | SPELL_ATTR_HIDDEN_CLIENTSIDE | SPELL_ATTR_HIDE_IN_COMBAT_LOG))
         {
             for (unsigned int i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
@@ -703,7 +697,7 @@ void LoadDBCStores(const std::string& dataPath)
 
             for (uint32 i = 0; i < MAX_MASTERY_SPELLS; ++i)
                 if (uint32 spellid = talentTabInfo->masterySpells[i])
-                    if (sSpellStore.LookupEntry(spellid))
+                    if (sSpellTemplate.LookupEntry<SpellEntry>(spellid))
                         sTalentTreeMasterySpellsMap[talentTabId].push_back(spellid);
 
             // prevent memory corruption; otherwise cls will become 12 below
@@ -722,7 +716,7 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bar,bad_dbc_files, sTalentTreePrimarySpellsStore, dbcPath, "TalentTreePrimarySpells.dbc");
     for (uint32 i = 0; i < sTalentTreePrimarySpellsStore.GetNumRows(); ++i)
         if (TalentTreePrimarySpellsEntry const* talentSpell = sTalentTreePrimarySpellsStore.LookupEntry(i))
-            if (sSpellStore.LookupEntry(talentSpell->SpellId))
+            if (sSpellTemplate.LookupEntry<SpellEntry>(talentSpell->SpellId))
                 sTalentTreePrimarySpellsMap[talentSpell->TalentTree].push_back(talentSpell->SpellId);
     sTalentTreePrimarySpellsStore.Clear();
 
@@ -758,8 +752,8 @@ void LoadDBCStores(const std::string& dataPath)
     // include existing nodes that have at least single not spell base (scripted) path
     {
         std::set<uint32> spellPaths;
-        for(uint32 i = 1; i < sSpellStore.GetNumRows (); ++i)
-            if(SpellEntry const* sInfo = sSpellStore.LookupEntry (i))
+        for(uint32 i = 1; i < sSpellTemplate.GetMaxEntry(); ++i)
+            if(SpellEntry const* sInfo = sSpellTemplate.LookupEntry<SpellEntry> (i))
                 for(int j=0; j < MAX_EFFECT_INDEX; ++j)
                     if(SpellEffectEntry const* effect = sInfo->GetSpellEffect(SpellEffectIndex(j)))
                         if(effect->Effect==123 /*SPELL_EFFECT_SEND_TAXI*/)
@@ -859,8 +853,7 @@ void LoadDBCStores(const std::string& dataPath)
     if (!sAreaStore.LookupEntry(4713)              ||       // last area (areaflag) added in 4.3.4
         !sCharTitlesStore.LookupEntry(287)         ||       // last char title added in 4.3.4
         !sGemPropertiesStore.LookupEntry(2250)     ||       // last gem property added in 4.3.4
-        !sMapStore.LookupEntry(980)                ||       // last map added in 4.3.4
-        !sSpellStore.LookupEntry(121820)           )        // last added spell in 4.3.4
+        !sMapStore.LookupEntry(980)                )       // last map added in 4.3.4
     {
         sLog.outError("\nYou have mixed version DBC files. Please re-extract DBC files for one from client build: %s",AcceptableClientBuildsListStr().c_str());
         Log::WaitBeforeContinueIfNeed();
@@ -1209,7 +1202,6 @@ float GetCurrencyPrecision(uint32 currencyId)
 
 // script support functions
 DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore()   { return &sSoundEntriesStore;   }
-DBCStorage <SpellEntry>         const* GetSpellStore()          { return &sSpellStore;          }
 DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore()     { return &sSpellRangeStore;     }
 DBCStorage <FactionEntry>       const* GetFactionStore()        { return &sFactionStore;        }
 DBCStorage <CreatureDisplayInfoEntry> const* GetCreatureDisplayStore() { return &sCreatureDisplayInfoStore; }
