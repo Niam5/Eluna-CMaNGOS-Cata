@@ -27,7 +27,7 @@ class QueryResult
 {
     public:
         QueryResult(uint64 rowCount, uint32 fieldCount)
-            : mFieldCount(fieldCount), mRowCount(rowCount) {}
+            : mCurrentRow(nullptr), mFieldCount(fieldCount), mRowCount(rowCount) {}
 
         virtual ~QueryResult() {}
 
@@ -55,7 +55,7 @@ class QueryNamedResult
         ~QueryNamedResult() { delete mQuery; }
 
         // compatible interface with QueryResult
-        bool NextRow() { return mQuery->NextRow(); }
+        bool NextRow() const { return mQuery->NextRow(); }
         Field* Fetch() const { return mQuery->Fetch(); }
         uint32 GetFieldCount() const { return mQuery->GetFieldCount(); }
         uint64 GetRowCount() const { return mQuery->GetRowCount(); }

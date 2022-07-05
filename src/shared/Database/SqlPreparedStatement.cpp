@@ -59,6 +59,7 @@ bool SqlStatement::Execute()
     {
         sLog.outError("SQL ERROR: wrong amount of parameters (%i instead of %i)", args->boundParams(), arguments());
         sLog.outError("SQL ERROR: statement: %s", m_pDB->GetStmtString(ID()).c_str());
+        delete args;
         MANGOS_ASSERT(false);
         return false;
     }
@@ -74,6 +75,7 @@ bool SqlStatement::DirectExecute()
     {
         sLog.outError("SQL ERROR: wrong amount of parameters (%i instead of %i)", args->boundParams(), arguments());
         sLog.outError("SQL ERROR: statement: %s", m_pDB->GetStmtString(ID()).c_str());
+        delete args;
         MANGOS_ASSERT(false);
         return false;
     }
@@ -131,7 +133,7 @@ bool SqlPlainPreparedStatement::execute()
     return m_pConn.Execute(m_szPlainRequest.c_str());
 }
 
-void SqlPlainPreparedStatement::DataToString(const SqlStmtFieldData& data, std::ostringstream& fmt)
+void SqlPlainPreparedStatement::DataToString(const SqlStmtFieldData& data, std::ostringstream& fmt) const
 {
     switch (data.type())
     {
@@ -154,5 +156,6 @@ void SqlPlainPreparedStatement::DataToString(const SqlStmtFieldData& data, std::
             break;
         }
         case FIELD_NONE:                                                    break;
+        default: throw std::domain_error("Unrecognized sql data type");
     }
 }
