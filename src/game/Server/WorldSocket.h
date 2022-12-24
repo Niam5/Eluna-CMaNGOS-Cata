@@ -26,7 +26,7 @@
 #define _WORLDSOCKET_H
 
 #include "Common.h"
-#include "Auth/AuthCrypt.h"
+#include "Server/AuthCrypt.h"
 #include "Auth/BigNumber.h"
 #include "Network/Socket.hpp"
 

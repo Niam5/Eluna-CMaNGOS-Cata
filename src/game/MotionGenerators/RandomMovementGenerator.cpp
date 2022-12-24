@@ -19,7 +19,7 @@
 #include "Entities/Creature.h"
 #include "MotionGenerators/RandomMovementGenerator.h"
 #include "Maps/Map.h"
-#include "Util.h"
+#include "Util/Util.h"
 #include "Movement/MoveSplineInit.h"
 #include "Movement/MoveSpline.h"
 

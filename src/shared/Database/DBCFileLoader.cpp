@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "DBCFileLoader.h"
+#include "Common.h"
 
 DBCFileLoader::DBCFileLoader()
 {
@@ -335,11 +336,10 @@ char* DBCFileLoader::AutoProduceStrings(const char* format, char* dataTable, Loc
     if (strlen(format) != fieldCount)
         return nullptr;
 
+    char* stringPool = new char[stringSize];
+    memcpy(stringPool, stringTable, stringSize);
     // each string field at load have array of string for each locale
     size_t stringHolderSize = sizeof(char*) * MAX_LOCALE;
-
-    char* stringPool= new char[stringSize];
-    memcpy(stringPool,stringTable,stringSize);
 
     uint32 offset = 0;
 
@@ -365,13 +365,12 @@ char* DBCFileLoader::AutoProduceStrings(const char* format, char* dataTable, Loc
                     char** slot = &holder[loc];
 
                     // fill only not filled entries
-                    if (*slot == nullStr)
+                    if (!*slot || !** slot)
                     {
                         const char* st = getRecord(y).getString(x);
                         *slot = stringPool + (st - (const char*)stringTable);
                     }
-
-                    offset+=sizeof(char*);
+                    offset += sizeof(char*);
                     break;
                 }
                 case FT_LOGIC:

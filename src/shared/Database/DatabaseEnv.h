@@ -21,7 +21,7 @@
 
 #include "Common.h"
 #include "Log.h"
-#include "Errors.h"
+#include "Util/Errors.h"
 
 #include "Database/Field.h"
 #include "Database/QueryResult.h"
@@ -49,5 +49,6 @@ typedef DatabaseMysql DatabaseType;
 extern DatabaseType WorldDatabase;
 extern DatabaseType CharacterDatabase;
 extern DatabaseType LoginDatabase;
+extern DatabaseType LogsDatabase;
 
 #endif

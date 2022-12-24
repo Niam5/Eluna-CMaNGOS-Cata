@@ -24,7 +24,7 @@
 #include "Globals/SharedDefines.h"
 #include "Server/DBCEnums.h"
 #include "Grids/Cell.h"
-#include "Util.h"
+#include "Util/Util.h"
 
 #include <list>
 #include <memory>

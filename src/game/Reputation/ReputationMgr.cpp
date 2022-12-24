@@ -19,7 +19,7 @@
 #include "Reputation/ReputationMgr.h"
 #include "Server/DBCStores.h"
 #include "Entities/Player.h"
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 #include "Globals/ObjectMgr.h"
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"

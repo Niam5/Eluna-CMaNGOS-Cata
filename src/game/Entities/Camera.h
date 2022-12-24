@@ -21,6 +21,7 @@
 
 #include "Common.h"
 #include "Maps/GridDefines.h"
+#include "Entities/EntitiesMgr.h"
 
 class ViewPoint;
 class WorldObject;

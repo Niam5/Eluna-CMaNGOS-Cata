@@ -66,8 +66,11 @@ class EventProcessor
 
         void Update(uint32 p_time);
         void KillAllEvents(bool force);
+        void KillEvent(BasicEvent* Event);
         void AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime = true);
-        uint64 CalculateTime(uint64 t_offset);
+        void ModifyEventTime(BasicEvent* event, uint64 msTime);
+        uint64 CalculateTime(uint64 t_offset) const;
+        EventList& GetEvents() { return m_events; }
 
     protected:
 

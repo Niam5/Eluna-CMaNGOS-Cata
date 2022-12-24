@@ -19,7 +19,7 @@
 #include "Server/DBCStores.h"
 #include "Policies/Singleton.h"
 #include "Log.h"
-#include "ProgressBar.h"
+#include "Util/ProgressBar.h"
 #include "Globals/SharedDefines.h"
 #include "Server/SQLStorages.h"
 #include "Entities/ObjectGuid.h"
@@ -341,13 +341,13 @@ template<class T>
 inline void LoadDBC(LocalData& localeData, BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, const std::string& dbc_path, const std::string& filename)
 {
     // compatibility format and C++ structure sizes
-    MANGOS_ASSERT(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()),sizeof(T),filename));
+    MANGOS_ASSERT(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()), sizeof(T), filename));
 
     std::string dbc_filename = dbc_path + filename;
     if(storage.Load(dbc_filename.c_str(),localeData.defaultLocale))
     {
         bar.step();
-        for(uint8 i = 0; fullLocaleNameList[i].name; ++i)
+        for (uint8 i = 0; fullLocaleNameList[i].name; ++i)
         {
             if (!(localeData.availableDbcLocales & (1 << i)))
                 continue;
@@ -358,19 +358,19 @@ inline void LoadDBC(LocalData& localeData, BarGoLink& bar, StoreProblemList& err
 
             if (!(localeData.checkedDbcLocaleBuilds & (1 << i)))
             {
-                localeData.checkedDbcLocaleBuilds |= (1<<i);// mark as checked for speedup next checks
+                localeData.checkedDbcLocaleBuilds |= (1 << i); // mark as checked for speedup next checks
 
-                uint32 build_loc = ReadDBCBuild(dbc_dir_loc,localStr);
-                if(localeData.main_build != build_loc)
+                uint32 build_loc = ReadDBCBuild(dbc_dir_loc, localStr);
+                if (localeData.main_build != build_loc)
                 {
-                    localeData.availableDbcLocales &= ~(1<<i);  // mark as not available for speedup next checks
+                    localeData.availableDbcLocales &= ~(1 << i); // mark as not available for speedup next checks
 
                     // exist but wrong build
                     if (build_loc)
                     {
                         std::string dbc_filename_loc = dbc_path + localStr->name + "/" + filename;
                         char buf[200];
-                        snprintf(buf,200," (exist, but DBC locale subdir %s have DBCs for build %u instead expected build %u, it and other DBC from subdir skipped)",localStr->name,build_loc,localeData.main_build);
+                        snprintf(buf, 200, " (exist, but DBC locale subdir %s have DBCs for build %u instead expected build %u, it and other DBC from subdir skipped)", localStr->name, build_loc, localeData.main_build);
                         errlist.push_back(dbc_filename_loc + buf);
                     }
 
@@ -380,14 +380,14 @@ inline void LoadDBC(LocalData& localeData, BarGoLink& bar, StoreProblemList& err
 
             std::string dbc_filename_loc = dbc_path + localStr->name + "/" + filename;
             if(!storage.LoadStringsFrom(dbc_filename_loc.c_str(),localStr->locale))
-                localeData.availableDbcLocales &= ~(1<<i);  // mark as not available for speedup next checks
+                localeData.availableDbcLocales &= ~(1 << i);// mark as not available for speedup next checks
         }
     }
     else
     {
         // sort problematic dbc to (1) non compatible and (2) nonexistent
-        FILE * f=fopen(dbc_filename.c_str(),"rb");
-        if(f)
+        FILE* f = fopen(dbc_filename.c_str(), "rb");
+        if (f)
         {
             char buf[100];
             snprintf(buf, 100, " (exist, but have %u fields instead " SIZEFMTD ") Wrong client version DBC file?", storage.GetFieldCount(), strlen(storage.GetFormat()));

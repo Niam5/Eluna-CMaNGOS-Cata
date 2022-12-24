@@ -30,11 +30,14 @@
 #include "SystemConfig.h"
 #include "revision.h"
 #include "revision_sql.h"
-#include "Util.h"
+#include "Util/Util.h"
 #include "Network/Listener.hpp"
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+#include <openssl/provider.h>
+#endif
 
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
@@ -44,7 +47,7 @@
 #include <thread>
 
 #ifdef _WIN32
-#include "ServiceWin32.h"
+#include "Platform/ServiceWin32.h"
 char serviceName[] = "realmd";
 char serviceLongName[] = "MaNGOS realmd service";
 char serviceDescription[] = "Massive Network Game Object Server";
@@ -56,7 +59,7 @@ char serviceDescription[] = "Massive Network Game Object Server";
  */
 int m_ServiceStatus = -1;
 #else
-#include "PosixDaemon.h"
+#include "Platform/PosixDaemon.h"
 #endif
 
 bool StartDB();
@@ -68,18 +71,18 @@ bool stopEvent = false;                                     ///< Setting it to t
 DatabaseType LoginDatabase;                                 ///< Accessor to the realm server database
 
 /// Launch the realm server
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     std::string configFile, serviceParameter;
 
     boost::program_options::options_description desc("Allowed options");
     desc.add_options()
-        ("config,c", boost::program_options::value<std::string>(&configFile)->default_value(_REALMD_CONFIG), "configuration file")
-        ("version,v", "print version and exit")
+    ("config,c", boost::program_options::value<std::string>(&configFile)->default_value(_REALMD_CONFIG), "configuration file")
+    ("version,v", "print version and exit")
 #ifdef _WIN32
-        ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, install, uninstall> service");
+    ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, install, uninstall> service");
 #else
-        ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, stop> service");
+    ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, stop> service");
 #endif
 
     boost::program_options::variables_map vm;
@@ -89,7 +92,7 @@ int main(int argc, char *argv[])
         boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
         boost::program_options::notify(vm);
     }
-    catch (boost::program_options::error const &e)
+    catch (boost::program_options::error const& e)
     {
         std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
         std::cerr << desc << std::endl;
@@ -169,12 +172,23 @@ int main(int argc, char *argv[])
         Log::WaitBeforeContinueIfNeed();
     }
 
-    DETAIL_LOG("%s (Library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
-    if (SSLeay() < 0x009080bfL)
+    DETAIL_LOG("%s (Library: %s)", OPENSSL_VERSION_TEXT, OpenSSL_version(OPENSSL_VERSION));
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    // Load OpenSSL 3.0+ providers
+    OSSL_PROVIDER* openssl_legacy = OSSL_PROVIDER_load(nullptr, "legacy");
+    if (!openssl_legacy)
     {
-        DETAIL_LOG("WARNING: Outdated version of OpenSSL lib. Logins to server may not work!");
-        DETAIL_LOG("WARNING: Minimal required version [OpenSSL 0.9.8k]");
+        sLog.outError("OpenSSL3: Failed to load Legacy provider");
+        return 1;
     }
+    OSSL_PROVIDER* openssl_default = OSSL_PROVIDER_load(nullptr, "default");
+    if (!openssl_default)
+    {
+        sLog.outError("OpenSSL3: Failed to load Default provider");
+        OSSL_PROVIDER_unload(openssl_legacy);
+        return 1;
+    }
+#endif
 
     sLog.outString();
     sLog.outString("<Ctrl-C> to stop.");
@@ -213,15 +227,16 @@ int main(int argc, char *argv[])
     // cleanup query
     // set expired bans to inactive
     LoginDatabase.BeginTransaction();
-    LoginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
-    LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+    LoginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE expires_at<=UNIX_TIMESTAMP() AND expires_at<>banned_at");
+    LoginDatabase.Execute("DELETE FROM ip_banned WHERE expires_at<=UNIX_TIMESTAMP() AND expires_at<>banned_at");
     LoginDatabase.CommitTransaction();
 
-    auto rmport = sConfig.GetIntDefault("RealmServerPort", DEFAULT_REALMSERVER_PORT);
-    std::string bind_ip = sConfig.GetStringDefault("BindIP", "0.0.0.0");
-
     // FIXME - more intelligent selection of thread count is needed here.  config option?
-    MaNGOS::Listener<AuthSocket> listener(rmport, 1);
+    MaNGOS::Listener<AuthSocket> listener(
+            sConfig.GetStringDefault("BindIP", "0.0.0.0"),
+            sConfig.GetIntDefault("RealmServerPort", DEFAULT_REALMSERVER_PORT),
+            sConfig.GetIntDefault("ListenerThreads", 1)
+    );
 
     ///- Catch termination signals
     HookSignals();

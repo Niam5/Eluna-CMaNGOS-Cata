@@ -53,7 +53,7 @@ MACRO(DisableWarnings)
     set(SearchWarningsFlag2 "/Wall")
   else()
     set(DisableWarningsFlag "-w")
-    set(SearchWarningsFlag1 "-[+W?]pedentic")
+    set(SearchWarningsFlag1 "-[+W?]pedantic")
     set(SearchWarningsFlag2 "-Wall")
   endif()
   foreach(temp_flag
@@ -135,7 +135,7 @@ endif()
 # find Git: used to get the revision number
 find_package(Git)
 
-if(NOT MSVC)
+if(NOT MSVC AND PCH)
   # Include cotire to manage PCH support
   include(cotire)
 endif()
@@ -255,48 +255,23 @@ if(UNIX AND (BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER OR BUILD_EXTRACTORS))
     find_package(MySQL REQUIRED)
   endif()
 
-  if(APPLE)
-    find_package(OpenSSL QUIET)
-    if(NOT OpenSSL_FOUND AND NOT OPENSSL_FOUND)
-      # If OpenSSL path isn't specified on mac we set the one that Homebrew uses
-      # and try again. This typically makes CMake find the OpenSSL headers and version.
-      # Homebrew installs the OpenSSL libraries with a version in the library file names
-      # though, like libcrypto.1.1.dylib, but CMake doesn't seem to check that file name
-      # pattern and might eventually find a non-matching library installed by macOS in
-      # a default search path. To avoid that, we'll also point pkg-config to the Homebrew
-      # location for OpenSSL details, because CMake checks pkg-config info as well.
-      set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
-      set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/opt/openssl/lib/pkgconfig")
-      find_package(OpenSSL)
-    endif()
-  else()
-    find_package(OpenSSL)
-  endif()
+  find_package(OpenSSL REQUIRED)
 
-  if(NOT OpenSSL_FOUND AND NOT OPENSSL_FOUND)
-    message(FATAL_ERROR "OpenSSL not found!")
-  else()
-    if(OpenSSL_VERSION AND NOT OPENSSL_VERSION)
-      set(OPENSSL_VERSION ${OpenSSL_VERSION})
-    endif()
-    if(OPENSSL_VERSION VERSION_LESS 1.1)
-      message(SEND_ERROR "OpenSSL: This project requires OpenSSL version 1.1.0 or higher")
-    endif()
+  message(STATUS "Found OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+  if(OPENSSL_VERSION VERSION_LESS 1.1)
+    message(SEND_ERROR "OpenSSL: This project requires OpenSSL version 1.1.0 or higher")
   endif()
+  if(OPENSSL_VERSION VERSION_LESS 1.1.1 OR (OPENSSL_VERSION VERSION_GREATER 3.0 AND OPENSSL_VERSION VERSION_LESS 3.0.7))
+    message(WARNING "OpenSSL: Your OpenSSL version is critically vulnerable or no longer being maintained, consider upgrading")
+  endif()
+endif()
 
-  if(BUILD_EXTRACTORS)
-    find_package(BZip2 REQUIRED)
-    if(BZip2_FOUND OR BZIP2_FOUND)
-      # add to global includes and linking lists for all sub-projects at once
-      include_directories(${BZIP2_INCLUDE_DIRS})
-      link_libraries(${BZIP2_LIBRARIES})
-    endif()
-    find_package(storm REQUIRED)
-    if(storm_FOUND)
-      # add to global includes and linking lists for all sub-projects at once
-      include_directories(${STORMLIB_INCLUDE_DIRS})
-      link_libraries(${STORMLIB_LIBRARIES})
-    endif()
+if(BUILD_EXTRACTORS)
+  find_package(BZip2 QUIET)
+  if(NOT (BZip2_FOUND OR BZIP2_FOUND))
+    # use provided source code
+    set(BZIP2_LIBRARIES "bzip2")
+    message(STATUS "Could not find BZIP2 on your system. The provided sources will be used.")
   endif()
 endif()
 
@@ -352,10 +327,19 @@ if(NOT BUILD_GAME_SERVER AND BUILD_PLAYERBOT)
   message(STATUS "BUILD_PLAYERBOT forced to OFF due to BUILD_GAME_SERVER is not set")
 endif()
 
+if(PCH)
+  if(${CMAKE_VERSION} VERSION_LESS "3.16") 
+    message("PCH is not supported by your CMake version")
+    message("Please consider to switch to CMake 3.16")
+    message("PCH is forced to OFF")
+    set(PCH OFF)
+  endif()
+endif()
+
 # print out the results before continuing
 include(cmake/showoptions.cmake)
 
-if(NOT BUILD_GAME_SERVER AND NOT BUILD_LOGIN_SERVER AND NOT BUILD_EXTRACTORS)
+if(NOT BUILD_GAME_SERVER AND NOT BUILD_LOGIN_SERVER AND NOT BUILD_EXTRACTORS AND NOT BUILD_DOCS AND NOT BUILD_RECASTDEMOMOD)
   message(FATAL_ERROR "You must select something to build!")
 endif()
 
@@ -407,6 +391,25 @@ if(BUILD_EXTRACTORS)
     add_subdirectory(contrib/vmap_assembler)
     add_subdirectory(contrib/mmap)
   endif()
+endif()
+
+if(BUILD_DOCS)
+  add_subdirectory(doc)
+endif()
+
+if(BUILD_RECASTDEMOMOD)
+  if (WIN32)
+    if (NOT BUILD_EXTRACTORS)
+      add_subdirectory(contrib/mmap)
+    endif()
+    add_subdirectory(contrib/recastdemomod)
+  else()
+    message(STATUS "BUILD_RECASTDEMOMOD forced to OFF. Not supported on non windows system.")
+  endif()
+endif()
+
+if(BUILD_GIT_ID)
+  add_subdirectory(contrib/git_id)
 endif()
 
 # set default startup project

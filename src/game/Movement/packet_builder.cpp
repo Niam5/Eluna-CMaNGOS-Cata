@@ -18,8 +18,8 @@
 
 #include "packet_builder.h"
 #include "MoveSpline.h"
-#include "Util.h"
-#include "WorldPacket.h"
+#include "Util/Util.h"
+#include "Server/WorldPacket.h"
 #include "Entities/Creature.h"
 
 namespace Movement

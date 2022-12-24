@@ -39,8 +39,8 @@
 #include "Utilities/EventProcessor.h"
 #include "MotionGenerators/MotionMaster.h"
 #include "Server/DBCStructure.h"
-#include "WorldPacket.h"
-#include "Timer.h"
+#include "Server/WorldPacket.h"
+#include "Util/Timer.h"
 #include "AI/BaseAI/CreatureAI.h"
 
 #include <list>

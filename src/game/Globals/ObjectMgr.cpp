@@ -29,14 +29,14 @@
 #include "World/World.h"
 #include "Groups/Group.h"
 #include "Arena/ArenaTeam.h"
-#include "ProgressBar.h"
+#include "Util/ProgressBar.h"
 #include "Tools/Language.h"
 #include "Pools/PoolManager.h"
 #include "GameEvents/GameEventMgr.h"
 #include "Chat/Chat.h"
 #include "Maps/MapPersistentStateMgr.h"
 #include "Spells/SpellAuras.h"
-#include "Util.h"
+#include "Util/Util.h"
 #include "Entities/GossipDef.h"
 #include "Mails/Mail.h"
 #include "Maps/InstanceData.h"
@@ -55,25 +55,24 @@
 
 INSTANTIATE_SINGLETON_1(ObjectMgr);
 
-bool normalizePlayerName(std::string& name)
+bool normalizePlayerName(std::string& name, size_t max_len)
 {
     if (name.empty())
         return false;
 
-    wchar_t wstr_buf[MAX_INTERNAL_PLAYER_NAME + 1];
-    size_t wstr_len = MAX_INTERNAL_PLAYER_NAME;
+    std::wstring wstr_buf;
+    if (!Utf8toWStr(name, wstr_buf))
+        return false;
 
-    if (!Utf8toWStr(name, &wstr_buf[0], wstr_len))
+    size_t len = wstr_buf.size();
+    if (len > max_len)
         return false;
 
     wstr_buf[0] = wcharToUpper(wstr_buf[0]);
-    for (size_t i = 1; i < wstr_len; ++i)
+    for (size_t i = 1; i < len; ++i)
         wstr_buf[i] = wcharToLower(wstr_buf[i]);
 
-    if (!WStrToUtf8(wstr_buf, wstr_len, name))
-        return false;
-
-    return true;
+    return WStrToUtf8(wstr_buf, name);
 }
 
 LanguageDesc lang_description[LANGUAGES_COUNT] =

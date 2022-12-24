@@ -27,7 +27,7 @@
 #include "Database/DatabaseEnv.h"
 #include "Log.h"
 #include "Server/Opcodes.h"
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 #include "Server/WorldSession.h"
 #include "Entities/Player.h"
 #include "Globals/ObjectMgr.h"
@@ -41,6 +41,8 @@
 #include "Loot/LootMgr.h"
 
 #include <boost/asio/ip/address_v4.hpp>
+
+#include <openssl/evp.h>
 
 #include <mutex>
 #include <deque>
@@ -1074,7 +1076,7 @@ void WorldSession::SendRedirectClient(std::string& ip, uint16 port)
 
     pkt << uint32(0);                                       // unknown
 
-    HMACSHA1 sha1(40, m_Socket->GetSessionKey().AsByteArray());
+    HMACSHA1 sha1(40, m_Socket->GetSessionKey().AsByteArray().data());
     sha1.UpdateData((uint8*)&ip2, 4);
     sha1.UpdateData((uint8*)&port, 2);
     sha1.Finalize();

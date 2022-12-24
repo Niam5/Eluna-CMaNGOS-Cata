@@ -19,14 +19,14 @@
 #include "Server/WorldSocket.h"
 #include "Common.h"
 
-#include "Util.h"
+#include "Util/Util.h"
 #include "World/World.h"
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 #include "Globals/SharedDefines.h"
-#include "ByteBuffer.h"
+#include "Util/ByteBuffer.h"
 #include "Server/Opcodes.h"
 #include "Database/DatabaseEnv.h"
-#include "Auth/Sha1.h"
+#include "Auth/CryptoHash.h"
 #include "Server/WorldSession.h"
 #include "Log.h"
 #include "Server/DBCStores.h"
@@ -367,9 +367,9 @@ bool WorldSocket::HandleAuthSession(WorldPacket &recvPacket)
     QueryResult* result =
         LoginDatabase.PQuery("SELECT "
                              "id, "                      //0
-                             "gmlevel,"                  //1
+                             "gmlevel, "                 //1
                              "sessionkey, "              //2
-                             "last_ip, "                 //3
+                             "lockedIp, "                //3
                              "locked, "                  //4
                              "v, "                       //5
                              "s, "                       //6
@@ -522,7 +522,7 @@ bool WorldSocket::HandleAuthSession(WorldPacket &recvPacket)
     // No SQL injection, username escaped.
     static SqlStatementID updAccount;
 
-    SqlStatement stmt = LoginDatabase.CreateStatement(updAccount, "UPDATE account SET last_ip = ? WHERE username = ?");
+    SqlStatement stmt = LoginDatabase.CreateStatement(updAccount, "UPDATE account SET lockedIP = ? WHERE username = ?");
     stmt.PExecute(address.c_str(), accountName.c_str());
 
     m_session = new WorldSession(id, this, AccountTypes(security), expansion, mutetime, locale);

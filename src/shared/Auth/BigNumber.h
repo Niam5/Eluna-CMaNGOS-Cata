@@ -20,6 +20,7 @@
 #define _AUTH_BIGNUMBER_H
 
 #include "Common.h"
+#include <vector>
 
 struct bignum_st;
 
@@ -34,37 +35,37 @@ class BigNumber
         void SetDword(uint32);
         void SetQword(uint64);
         void SetBinary(const uint8* bytes, int len);
-        void SetHexStr(const char* str);
+        int SetHexStr(const char* str);
 
         void SetRand(int numbits);
 
-        BigNumber operator=(const BigNumber& bn);
+        BigNumber& operator=(const BigNumber& bn);
 
-        BigNumber operator+=(const BigNumber& bn);
+        BigNumber& operator+=(const BigNumber& bn);
         BigNumber operator+(const BigNumber& bn)
         {
             BigNumber t(*this);
             return t += bn;
         }
-        BigNumber operator-=(const BigNumber& bn);
+        BigNumber& operator-=(const BigNumber& bn);
         BigNumber operator-(const BigNumber& bn)
         {
             BigNumber t(*this);
             return t -= bn;
         }
-        BigNumber operator*=(const BigNumber& bn);
+        BigNumber& operator*=(const BigNumber& bn);
         BigNumber operator*(const BigNumber& bn)
         {
             BigNumber t(*this);
             return t *= bn;
         }
-        BigNumber operator/=(const BigNumber& bn);
+        BigNumber& operator/=(const BigNumber& bn);
         BigNumber operator/(const BigNumber& bn)
         {
             BigNumber t(*this);
             return t /= bn;
         }
-        BigNumber operator%=(const BigNumber& bn);
+        BigNumber& operator%=(const BigNumber& bn);
         BigNumber operator%(const BigNumber& bn)
         {
             BigNumber t(*this);
@@ -76,15 +77,15 @@ class BigNumber
         BigNumber ModExp(const BigNumber& bn1, const BigNumber& bn2);
         BigNumber Exp(const BigNumber&);
 
-        int GetNumBytes(void);
+        int GetNumBytes(void) const;
 
         struct bignum_st* BN() { return _bn; }
 
-        uint32 AsDword();
-        uint8* AsByteArray(int minSize = 0, bool reverse = true);
+        uint32 AsDword() const;
+        std::vector<uint8> AsByteArray(int minSize = 0, bool reverse = true) const;
 
-        const char* AsHexStr();
-        const char* AsDecStr();
+        const char* AsHexStr() const;
+        const char* AsDecStr() const;
 
     private:
         struct bignum_st* _bn;

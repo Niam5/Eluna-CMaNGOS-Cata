@@ -25,7 +25,7 @@
 
 #include "Common.h"
 #include "Globals/SharedDefines.h"
-#include "Timer.h"
+#include "Util/Timer.h"
 
 class Player;
 class Map;
@@ -153,8 +153,7 @@ class WeatherMgr
             WeatherZoneMap::const_iterator itr = mWeatherZoneMap.find(zone_id);
             if (itr != mWeatherZoneMap.end())
                 return &itr->second;
-            else
-                return nullptr;
+            return nullptr;
         }
 
     private:

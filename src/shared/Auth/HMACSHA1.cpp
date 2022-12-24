@@ -19,63 +19,99 @@
 #include "Auth/HMACSHA1.h"
 #include "BigNumber.h"
 
-HMACSHA1::HMACSHA1(uint32 len, uint8* seed)
+HMACSHA1::HMACSHA1(uint32 len, uint8 const* seed)
 {
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
+    memcpy(&m_key, seed, len);
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    m_mac = EVP_MAC_fetch(nullptr, "HMAC", nullptr);
+    m_ctx = EVP_MAC_CTX_new(m_mac);
+
+    OSSL_PARAM params[2];
+    params[0] = OSSL_PARAM_construct_utf8_string("digest", const_cast<char*>("SHA1"), 0);
+    params[1] = OSSL_PARAM_construct_end();
+
+    EVP_MAC_init(m_ctx, m_key, len, params);
+#else
+    m_ctx = HMAC_CTX_new();
+    HMAC_Init_ex(m_ctx, &m_key, len, EVP_sha1(), nullptr);
+#endif
+}
+
+HMACSHA1::HMACSHA1(uint32 len, uint8 const* seed, bool) // to get over the default constructor
+{
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    m_mac = EVP_MAC_fetch(nullptr, "HMAC", nullptr);
+    m_ctx = EVP_MAC_CTX_new(m_mac);
+
+    OSSL_PARAM params[2];
+    params[0] = OSSL_PARAM_construct_utf8_string("digest", const_cast<char*>("SHA1"), 0);
+    params[1] = OSSL_PARAM_construct_end();
+
+    EVP_MAC_init(m_ctx, seed, len, params);
+#else
     m_ctx = HMAC_CTX_new();
     HMAC_Init_ex(m_ctx, seed, len, EVP_sha1(), nullptr);
-#else
-    HMAC_CTX_init(&m_ctx);
-    HMAC_Init_ex(&m_ctx, seed, len, EVP_sha1(), nullptr);
 #endif
 }
 
 HMACSHA1::~HMACSHA1()
 {
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
-    HMAC_CTX_free(m_ctx);
+    memset(&m_key, 0x00, SEED_KEY_SIZE);
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    EVP_MAC_CTX_free(m_ctx);
+    EVP_MAC_free(m_mac);
 #else
-    HMAC_CTX_cleanup(&m_ctx);
+    HMAC_CTX_free(m_ctx);
 #endif
 }
 
 void HMACSHA1::UpdateBigNumber(BigNumber* bn)
 {
-    UpdateData(bn->AsByteArray(), bn->GetNumBytes());
+    UpdateData(bn->AsByteArray().data(), bn->GetNumBytes());
 }
 
 void HMACSHA1::UpdateData(const uint8* data, int length)
 {
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
-    HMAC_Update(m_ctx, data, length);
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    EVP_MAC_update(m_ctx, data, length);
 #else
-    HMAC_Update(&m_ctx, data, length);
+    HMAC_Update(m_ctx, data, length);
 #endif
 }
 
 void HMACSHA1::UpdateData(const std::string& str)
 {
-    UpdateData((uint8 const*)str.c_str(), str.length());
+    UpdateData(reinterpret_cast<const uint8*>(str.c_str()), str.length());
+}
+
+void HMACSHA1::Initialize()
+{
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    OSSL_PARAM params[2];
+    params[0] = OSSL_PARAM_construct_utf8_string("digest", const_cast<char*>("SHA1"), 0);
+    params[1] = OSSL_PARAM_construct_end();
+
+    EVP_MAC_init(m_ctx, m_key, SEED_KEY_SIZE, params);
+#else
+    HMAC_Init_ex(m_ctx, &m_key, SEED_KEY_SIZE, EVP_sha1(), NULL);
+#endif
 }
 
 void HMACSHA1::Finalize()
 {
-    uint32 length = 0;
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
-    HMAC_Final(m_ctx, (uint8*)m_digest, &length);
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    size_t length = 0;
+    EVP_MAC_final(m_ctx, m_digest, &length, sizeof(m_digest));
 #else
-    HMAC_Final(&m_ctx, (uint8*)m_digest, &length);
+    uint32 length = 0;
+    HMAC_Final(m_ctx, (uint8*)m_digest, &length);
 #endif
     MANGOS_ASSERT(length == SHA_DIGEST_LENGTH);
 }
 
 uint8* HMACSHA1::ComputeHash(BigNumber* bn)
 {
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
-    HMAC_Update(m_ctx, bn->AsByteArray(), bn->GetNumBytes());
-#else
-    HMAC_Update(&m_ctx, bn->AsByteArray(), bn->GetNumBytes());
-#endif
+    UpdateData(bn->AsByteArray().data(), bn->GetNumBytes());
     Finalize();
-    return (uint8*)m_digest;
+    return m_digest;
 }

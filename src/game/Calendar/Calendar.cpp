@@ -19,7 +19,7 @@
 #include "Calendar/Calendar.h"
 #include "Mails/Mail.h"
 #include "Globals/ObjectMgr.h"
-#include "ProgressBar.h"
+#include "Util/ProgressBar.h"
 
 INSTANTIATE_SINGLETON_1(CalendarMgr);
 

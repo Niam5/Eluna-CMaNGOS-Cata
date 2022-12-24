@@ -24,9 +24,9 @@
 #include "Entities/ObjectGuid.h"
 #include "MotionGenerators/Path.h"
 
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 #include "Server/DBCStores.h"
-#include "ProgressBar.h"
+#include "Util/ProgressBar.h"
 #include "AI/ScriptDevAI/ScriptDevAIMgr.h"
 
 void MapManager::LoadTransports()

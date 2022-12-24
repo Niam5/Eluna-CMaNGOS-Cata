@@ -17,7 +17,7 @@
  */
 
 #include "AI/BaseAI/AggressorAI.h"
-#include "Errors.h"
+#include "Util/Errors.h"
 #include "Entities/Creature.h"
 #include "World/World.h"
 #include "Server/DBCStores.h"

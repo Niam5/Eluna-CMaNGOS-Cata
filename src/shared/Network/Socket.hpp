@@ -64,6 +64,7 @@ namespace MaNGOS
             std::unique_ptr<PacketBuffer> m_secondaryOutBuffer;
 
             std::mutex m_mutex;
+            std::mutex m_closeMutex;
             boost::asio::deadline_timer m_outBufferFlushTimer;
 
             void StartAsyncRead();
@@ -78,6 +79,8 @@ namespace MaNGOS
         protected:
             const std::string m_address;
             const std::string m_remoteEndpoint;
+            boost::asio::ip::address m_remoteAddress;
+            uint16 m_remotePort;
 
             virtual bool ProcessIncomingData() = 0;
 
@@ -110,6 +113,9 @@ namespace MaNGOS
 
             template <typename T>
             std::shared_ptr<T> shared() { return std::static_pointer_cast<T>(shared_from_this()); }
+
+            boost::asio::ip::address GetRemoteIpAddress() const { return m_remoteAddress; }
+            uint16 GetRemotePort() const { return m_remotePort; }
 
         private:
             // custom allocator based on example from http://www.boost.org/doc/libs/1_62_0/doc/html/boost_asio/example/cpp11/allocation/server.cpp

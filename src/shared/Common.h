@@ -35,9 +35,9 @@
 #endif
 
 #include <set>
+#include <vector>
 #include <list>
 #include <string>
-#include <vector>
 #include <map>
 #include <queue>
 #include <sstream>
@@ -46,11 +46,16 @@
 #include <unordered_set>
 #include <chrono>
 
-#include "Errors.h"
-#include "Threading.h"
+#include "Platform/Filesystem.h"
+
+#include "Util/Errors.h"
+#include "Multithreading/Threading.h"
 
 // included to use sleep_for()
 #include <thread>
+
+typedef std::chrono::system_clock Clock;
+typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> TimePoint;
 
 #if COMPILER == COMPILER_MICROSOFT
 
@@ -97,8 +102,10 @@ inline float finiteAlways(float f) { return std::isfinite(f) ? f : 0.0f; }
 #define PAIR64_LOPART(x)   (uint32)(uint64(x)         & uint64(0x00000000FFFFFFFF))
 
 #define MAKE_PAIR32(l, h)  uint32( uint16(l) | ( uint32(h) << 16 ) )
-#define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
-#define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
+#define PAIR32_HIPART(x)   uint16( ((uint32(x) >> 16) & 0x0000FFFF) )
+#define PAIR32_LOPART(x)   uint16( (uint32(x)         & 0x0000FFFF) )
+
+#define MAX_NETCLIENT_PACKET_SIZE (32767 - 1)               // Client hardcap: int16 with trailing zero space otherwise crash on memory free
 
 enum TimeConstants
 {
@@ -109,6 +116,22 @@ enum TimeConstants
     MONTH  = DAY * 30,
     YEAR   = MONTH * 12,
     IN_MILLISECONDS = 1000
+};
+
+enum FieldFormat
+{
+    FT_NA = 'x',                                            // ignore/ default, 4 byte size, in Source String means field is ignored, in Dest String means field is filled with default value
+    FT_NA_BYTE = 'X',                                       // ignore/ default, 1 byte size, see above
+    FT_NA_FLOAT = 'F',                                      // ignore/ default,  float size, see above
+    FT_NA_POINTER = 'p',                                    // fill default value into dest, pointer size, Use this only with static data (otherwise mem-leak)
+    FT_STRING = 's',                                        // char*
+    FT_FLOAT = 'f',                                         // float
+    FT_INT = 'i',                                           // uint32
+    FT_BYTE = 'b',                                          // uint8
+    FT_SORT = 'd',                                          // sorted by this field, field is not included
+    FT_IND = 'n',                                           // the same,but parsed to data
+    FT_LOGIC = 'l',                                         // Logical (boolean)
+    FT_64BITINT = 'L'                                       // uint64
 };
 
 enum AccountTypes
@@ -193,5 +216,39 @@ inline char* mangos_strdup(const char* source)
 #ifndef countof
 #define countof(array) (sizeof(array) / sizeof((array)[0]))
 #endif
+
+
+
+enum CMDebugFlags
+{
+    CMDEBUGFLAG_NONE                        = 0x00000000,
+    CMDEBUGFLAG_WP_PATH                     = 0x00000001, // show intermediates point in gm mode (waypoints)
+
+
+
+    CMDEBUGFLAG_DEV_USE1                    = 0x80000000, // can be used for various reason during development
+    CMDEBUGFLAG_DEV_USE2                    = 0x80000000  // can be used for various reason during development
+};
+
+struct CMDebugCommandTableStruct
+{
+    CMDebugCommandTableStruct(std::string const& cmd, std::string const& desc, CMDebugFlags f) :
+        command(cmd), description(desc), flag(f) {}
+
+    std::string command;
+    std::string description;
+    CMDebugFlags flag;
+};
+
+static const std::vector<CMDebugCommandTableStruct> CMDebugCommandTable =
+{
+    { "clearall"                , "reset all flags"                         , CMDEBUGFLAG_NONE                  },
+    { "setall"                  , "set all flags"                           , CMDEBUGFLAG_NONE                  },
+
+    { "wppath"                  , "show waypoint path send to client"       , CMDEBUGFLAG_WP_PATH               },
+
+    { "dev1"                    , "for general use during development"      , CMDEBUGFLAG_DEV_USE1              },
+    { "dev2"                    , "for general use during development"      , CMDEBUGFLAG_DEV_USE2              }
+};
 
 #endif

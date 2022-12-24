@@ -40,7 +40,7 @@
 # define _MANGOSDCONFVERSION 2022061901
 #endif
 #ifndef _REALMDCONFVERSION
-# define _REALMDCONFVERSION 2010062001
+# define _REALMDCONFVERSION 2022122401
 #endif
 
 #if MANGOS_ENDIAN == MANGOS_BIGENDIAN
@@ -55,6 +55,10 @@
 # define ARCHITECTURE "x64"
 #elif defined(__ia64)  || defined(__IA64__)  || defined(_M_IA64)
 # define ARCHITECTURE "IA64"
+#elif defined(__aarch64__)
+# define ARCHITECTURE "AArch64"
+#elif defined(__arm__)
+# define ARCHITECTURE "ARM32"
 #else
 # define ARCHITECTURE "x32"
 #endif

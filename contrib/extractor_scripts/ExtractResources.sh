@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 # This file is part of the CMaNGOS Project. See AUTHORS file for Copyright information
 #
@@ -11,6 +12,9 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 ## Expected param 1 to be 'a' for all, else ask some questions
+## optionally param 1 or param 2 is the path to game client
+
+PREFIX="$(dirname $0)"
 
 ## Normal log file (if not overwritten by second param)
 LOG_FILE="MaNGOSExtractor.log"
@@ -27,6 +31,42 @@ USE_MMAPS_DELAY=""
 AD_RES=""
 VMAP_RES=""
 NUM_THREAD=""
+
+if [ "$1" != "a" ] && [ "x$1" != "x" ]
+then
+  CLIENT_PATH="$1"
+  OUTPUT_PATH="$2"
+elif [ "x$2" != "x" ]
+then
+  CLIENT_PATH="$2"
+  OUTPUT_PATH="$3"
+fi
+
+if [ "x${CLIENT_PATH}" != "x" ]
+then
+  if [ ! -d "${CLIENT_PATH}/Data" ]
+  then
+    echo "Data folder not found in provided client path [${CLIENT_PATH}]. Plese provide a correct client path."
+    exit 1
+  fi
+else
+  if [ ! -d "$(pwd)/Data" ]
+  then
+    echo "Data folder not found. Make sure you have copied the script to the client folder and the 'Data' folder has the correct case."
+    exit 1
+  fi
+fi
+
+if [ "x${OUTPUT_PATH}" != "x" ]
+then
+  if [ ! -d "${OUTPUT_PATH}" ]
+  then
+    echo "Provided OUTPUT_PATH=${OUTPUT_PATH} does not exist, please create it before"
+    exit 1
+  fi
+  LOG_FILE="${OUTPUT_PATH:-.}/${LOG_FILE}"
+  DETAIL_LOG_FILE="${OUTPUT_PATH:-.}/${DETAIL_LOG_FILE}"
+fi
 
 if [ "$1" = "a" ]
 then
@@ -66,7 +106,8 @@ else
     then
       USE_MMAPS="1";
     else
-      echo "Only reextract offmesh tiles for mmaps?"
+      echo
+      echo "Only reextract offmesh tiles for mmaps? (y/n)"
       read line
       if [ "$line" = "y" ]
       then
@@ -76,11 +117,23 @@ else
   fi
 fi
 
+if [ "x$CLIENT_PATH" != "x" ]
+then
+  AD_OPT_RES="-i $CLIENT_PATH"
+  VMAP_OPT_RES="-d $CLIENT_PATH/Data"
+fi
+
+if [ "x$OUTPUT_PATH" != "x" ] && [ -d "$OUTPUT_PATH" ]
+then
+  AD_OPT_RES="$AD_OPT_RES -o $OUTPUT_PATH"
+  VMAP_OPT_RES="$VMAP_OPT_RES -o $OUTPUT_PATH"
+fi
+
 ## Special case: Only reextract offmesh tiles
 if [ "$USE_MMAPS_OFFMESH" = "1" ]
 then
   echo "Only extracting offmesh tiles"
-  MoveMapGen.sh offmesh $LOG_FILE $DETAIL_LOG_FILE
+  $PREFIX/MoveMapGen.sh offmesh "$OUTPUT_PATH" $LOG_FILE $DETAIL_LOG_FILE
   exit 0
 fi
 
@@ -107,26 +160,35 @@ then
     echo "If you do _not_ want MMap Extraction to start delayed, just press return"
     echo "Else enter number followed by s for seconds, m for minutes, h for hours"
     echo "Example: \"3h\" - will start mmap extraction in 3 hours"
-    read -p"MMap Extraction Delay (leave blank for direct extraction): " USE_MMAPS_DELAY
     echo
+    echo "MMap Extraction Delay (leave blank for direct extraction):"
+    read USE_MMAPS_DELAY
   else
     USE_MMAPS_DELAY=""
   fi
 fi
 
 ## Give some status
-echo "Current Settings: Extract DBCs/maps: $USE_AD, Extract vmaps: $USE_VMAPS, Extract mmaps: $USE_MMAPS on $NUM_CPU processes"
+echo
+echo "Current Settings:"
+echo "Extract DBCs/maps: $USE_AD, Extract vmaps: $USE_VMAPS, Extract mmaps: $USE_MMAPS, Processes for mmaps: $NUM_THREAD"
+if [ "$USE_AD" = "1" ] && [ "$AD_RES" = "-f 0" ]; then
+  echo "maps extraction will be high-resolution";
+fi
+if [ "$USE_VMAPS" = "1" ] && [ "$VMAP_RES" = "-l" ]; then
+  echo "vmaps extraction will be high-resolution";
+fi
 if [ "$USE_MMAPS_DELAY" != "" ]; then
   echo "MMap Extraction will be started delayed by $USE_MMAPS_DELAY"
 fi
 echo
 if [ "$1" != "a" ]
 then
-  echo "If you don't like this settings, interrupt with CTRL+C"
+  echo "Press (Enter) to continue, or interrupt with (CTRL+C)"
   read line
 fi
 
-echo "`date`: Start extracting dataz for MaNGOS" | tee $LOG_FILE
+echo "$(date): Start extracting dataz for MaNGOS" | tee $LOG_FILE
 
 ## Handle log messages
 if [ "$USE_AD" = "1" ];
@@ -155,9 +217,9 @@ echo | tee -a $DETAIL_LOG_FILE
 ## Extract dbcs and maps
 if [ "$USE_AD" = "1" ]
 then
- echo "`date`: Start extraction of DBCs and map files..." | tee -a $LOG_FILE
- ./ad | tee -a $DETAIL_LOG_FILE
- echo "`date`: Extracting of DBCs and map files finished" | tee -a $LOG_FILE
+ echo "$(date): Start extraction of DBCs and map files..." | tee -a $LOG_FILE
+ $PREFIX/ad $AD_RES $AD_OPT_RES | tee -a $DETAIL_LOG_FILE
+ echo "$(date): Extracting of DBCs and map files finished" | tee -a $LOG_FILE
  echo | tee -a $LOG_FILE
  echo | tee -a $DETAIL_LOG_FILE
 fi
@@ -165,13 +227,26 @@ fi
 ## Extract vmaps
 if [ "$USE_VMAPS" = "1" ]
 then
-  echo "`date`: Start extraction of vmaps..." | tee -a $LOG_FILE
-  ./vmap_extractor | tee -a $DETAIL_LOG_FILE
-  echo "`date`: Extracting of vmaps finished" | tee -a $LOG_FILE
-  mkdir vmaps
-  echo "`date`: Start assembling of vmaps..." | tee -a $LOG_FILE
-  ./vmap_assembler Buildings vmaps | tee -a $DETAIL_LOG_FILE
-  echo "`date`: Assembling of vmaps finished" | tee -a $LOG_FILE
+  echo "$(date): Start extraction of vmaps..." | tee -a $LOG_FILE
+  $PREFIX/vmap_extractor $VMAP_RES $VMAP_OPT_RES | tee -a $DETAIL_LOG_FILE
+  exit_code="${PIPESTATUS[0]}"
+  if [[ "$exit_code" -ne "0" ]]; then
+    echo "$(date): Extraction of vmaps failed with errors. Aborting extraction. See the log file for more details."
+    exit "$exit_code"
+  fi
+  echo "$(date): Extracting of vmaps finished" | tee -a $LOG_FILE
+  if [ ! -d "$(pwd)/vmaps" ]
+  then
+    mkdir ${OUTPUT_PATH:-.}/vmaps
+  fi
+  echo "$(date): Start assembling of vmaps..." | tee -a $LOG_FILE
+  $PREFIX/vmap_assembler ${OUTPUT_PATH:-.}/Buildings ${OUTPUT_PATH:-.}/vmaps | tee -a $DETAIL_LOG_FILE
+  exit_code="${PIPESTATUS[0]}"
+  if [[ "$exit_code" -ne "0" ]]; then
+    echo "$(date): Assembling of vmaps failed with errors. Aborting extraction. See the log file for more details."
+    exit "$exit_code"
+  fi
+  echo "$(date): Assembling of vmaps finished" | tee -a $LOG_FILE
 
   echo | tee -a $LOG_FILE
   echo | tee -a $DETAIL_LOG_FILE
@@ -185,5 +260,5 @@ then
     echo "Current time: $(date)"
     sleep $USE_MMAPS_DELAY
   fi
-  sh MoveMapGen.sh "maps" $LOG_FILE $DETAIL_LOG_FILE $NUM_THREAD
+  sh MoveMapGen.sh "maps" "$OUTPUT_PATH" $LOG_FILE $DETAIL_LOG_FILE $NUM_THREAD
 fi

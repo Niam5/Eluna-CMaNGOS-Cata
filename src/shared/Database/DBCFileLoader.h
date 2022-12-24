@@ -19,7 +19,7 @@
 #ifndef DBC_FILE_LOADER_H
 #define DBC_FILE_LOADER_H
 #include "Platform/Define.h"
-#include "Utilities/ByteConverter.h"
+#include "Util/ByteConverter.h"
 #include "Common.h"
 #include <cassert>
 
@@ -94,10 +94,10 @@ class DBCFileLoader
         uint32 GetCols() const { return fieldCount; }
         uint32 GetOffset(size_t id) const { return (fieldsOffset != nullptr && id < fieldCount) ? fieldsOffset[id] : 0; }
         bool IsLoaded() const { return data != nullptr; }
-        char* AutoProduceData(const char* fmt, uint32& count, char**& indexTable);
+        char* AutoProduceData(const char* format, uint32& records, char**& indexTable);
+        static uint32 GetFormatRecordSize(const char* format, int32* index_pos = nullptr);
         char* AutoProduceStringsArrayHolders(const char* fmt, char* dataTable);
         char* AutoProduceStrings(const char* fmt, char* dataTable, LocaleConstant loc);
-        static uint32 GetFormatRecordSize(const char * format, int32 * index_pos = nullptr);
         static uint32 GetFormatStringsFields(const char * format);
 
     private:

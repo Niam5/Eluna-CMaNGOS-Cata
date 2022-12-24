@@ -25,16 +25,14 @@
 class SARC4
 {
     public:
-        SARC4(uint8 len);
-        SARC4(uint8* seed, uint8 len);
+        SARC4(size_t len);
+        SARC4(const uint8 *seed, size_t len);
         ~SARC4();
-        void Init(uint8* seed);
-        void UpdateData(int len, uint8* data);
+
+        void Init(const uint8 *seed);
+        void UpdateData(uint8 *data, size_t len);
+
     private:
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
-        EVP_CIPHER_CTX *m_ctx;
-#else
-        EVP_CIPHER_CTX m_ctx;
-#endif
+        EVP_CIPHER_CTX* m_ctx;
 };
 #endif

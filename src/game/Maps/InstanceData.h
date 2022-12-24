@@ -21,7 +21,7 @@
 
 #include "Common.h"
 #include "Entities/ObjectGuid.h"
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 
 class Map;
 class Unit;

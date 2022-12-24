@@ -18,6 +18,7 @@
 # disable warnings for dependencies
 DisableWarnings()
 
+
 # overwrite target creation macro to add dependencies folder property
 set(SET_DEPENDENCY_PROP TRUE)
 macro(add_library _target)
@@ -68,10 +69,8 @@ macro(add_custom_target _target)
         endif()
     endif()
 endmacro()
-
 add_subdirectory(recastnavigation)
 add_subdirectory(src)
-add_subdirectory(g3dlite)
 add_subdirectory(lualib)
 
 if(WIN32)
@@ -80,3 +79,8 @@ if(WIN32)
 	add_subdirectory(loadlib)
   endif()
 endif()
+if (BUILD_GAME_SERVER OR BUILD_LOGIN_SERVER OR BUILD_EXTRACTORS)
+  add_subdirectory(g3dlite)
+endif()
+
+set(SET_DEPENDENCY_PROP FALSE)

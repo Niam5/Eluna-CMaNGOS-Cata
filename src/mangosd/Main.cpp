@@ -23,15 +23,19 @@
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
 #include "Config/Config.h"
-#include "ProgressBar.h"
+#include "Util/ProgressBar.h"
 #include "Log.h"
 #include "Master.h"
 #include "SystemConfig.h"
 #include "AuctionHouseBot/AuctionHouseBot.h"
 #include "revision.h"
+#include "PlayerBot/config.h"
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+#include <openssl/provider.h>
+#endif
 
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
@@ -39,7 +43,7 @@
 #include <iostream>
 
 #ifdef _WIN32
-#include "ServiceWin32.h"
+#include "Platform/ServiceWin32.h"
 char serviceName[] = "mangosd";
 char serviceLongName[] = "MaNGOS world service";
 char serviceDescription[] = "Massive Network Game Object Server";
@@ -51,7 +55,7 @@ char serviceDescription[] = "Massive Network Game Object Server";
  */
 int m_ServiceStatus = -1;
 #else
-#include "PosixDaemon.h"
+#include "Platform/PosixDaemon.h"
 #endif
 
 DatabaseType WorldDatabase;                                 ///< Accessor to the world database
@@ -61,20 +65,23 @@ DatabaseType LoginDatabase;                                 ///< Accessor to the
 uint32 realmID;                                             ///< Id of the realm
 
 /// Launch the mangos server
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    std::string auctionBotConfig, configFile, serviceParameter;
+    std::string auctionBotConfig, configFile, playerBotConfig, serviceParameter;
 
     boost::program_options::options_description desc("Allowed options");
     desc.add_options()
-        ("ahbot,a", boost::program_options::value<std::string>(&auctionBotConfig), "ahbot configuration file")
-        ("config,c", boost::program_options::value<std::string>(&configFile)->default_value(_MANGOSD_CONFIG), "configuration file")
-        ("help,h", "prints usage")
-        ("version,v", "print version and exit")
+    ("ahbot,a", boost::program_options::value<std::string>(&auctionBotConfig), "ahbot configuration file")
+    ("config,c", boost::program_options::value<std::string>(&configFile)->default_value(_MANGOSD_CONFIG), "configuration file")
+#ifdef BUILD_PLAYERBOT
+    ("playerbot,p", boost::program_options::value<std::string>(&playerBotConfig)->default_value(_D_PLAYERBOT_CONFIG), "playerbot configuration file")
+#endif
+    ("help,h", "prints usage")
+    ("version,v", "print version and exit")
 #ifdef _WIN32
-        ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, install, uninstall> service");
+    ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, install, uninstall> service");
 #else
-        ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, stop> service");
+    ("s", boost::program_options::value<std::string>(&serviceParameter), "<run, stop> service");
 #endif
 
     boost::program_options::variables_map vm;
@@ -97,7 +104,7 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-    catch (boost::program_options::error const &e)
+    catch (boost::program_options::error const& e)
     {
         std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
         std::cerr << desc << std::endl;
@@ -107,6 +114,11 @@ int main(int argc, char *argv[])
 
     if (vm.count("ahbot"))
         sAuctionBotConfig.SetConfigFileName(auctionBotConfig);
+
+#ifdef BUILD_PLAYERBOT
+    if (vm.count("playerbot"))
+        _PLAYERBOT_CONFIG = playerBotConfig;
+#endif
 
 #ifdef _WIN32                                                // windows service command need execute before config read
     if (vm.count("s"))
@@ -150,7 +162,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    sLog.outString("[%s World server v%s] id(%d) port(%d)", _PACKAGENAME, VERSION
+    sLog.outString("[%s Cata World server v%s] id(%d) port(%d)", _PACKAGENAME, VERSION
         , sConfig.GetIntDefault("RealmID", -1), sConfig.GetIntDefault("WorldServerPort", -1));
     sLog.outString("\n\n"
         "       _____     __  __       _   _  _____  ____   _____ \n"
@@ -166,12 +178,23 @@ int main(int argc, char *argv[])
     sLog.outString("Using commit hash(%s) committed on %s", REVISION_ID, REVISION_DATE);
     sLog.outString("Using configuration file %s.", configFile.c_str());
 
-    DETAIL_LOG("%s (Library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
-    if (SSLeay() < 0x009080bfL)
+    DETAIL_LOG("%s (Library: %s)", OPENSSL_VERSION_TEXT, OpenSSL_version(OPENSSL_VERSION));
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+    // Load OpenSSL 3.0+ providers
+    OSSL_PROVIDER* openssl_legacy = OSSL_PROVIDER_load(nullptr, "legacy");
+    if (!openssl_legacy)
     {
-        DETAIL_LOG("WARNING: Outdated version of OpenSSL lib. Logins to server may not work!");
-        DETAIL_LOG("WARNING: Minimal required version [OpenSSL 0.9.8k]");
+        sLog.outError("OpenSSL3: Failed to load Legacy provider");
+        return 1;
     }
+    OSSL_PROVIDER* openssl_default = OSSL_PROVIDER_load(nullptr, "default");
+    if (!openssl_default)
+    {
+        sLog.outError("OpenSSL3: Failed to load Default provider");
+        OSSL_PROVIDER_unload(openssl_legacy);
+        return 1;
+    }
+#endif
 
     DETAIL_LOG("Using Boost: %s", BOOST_LIB_VERSION);
 

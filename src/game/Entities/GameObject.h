@@ -22,7 +22,7 @@
 #include "Common.h"
 #include "Globals/SharedDefines.h"
 #include "Entities/Object.h"
-#include "Util.h"
+#include "Util/Util.h"
 #include "AI/BaseAI/GameObjectAI.h"
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform

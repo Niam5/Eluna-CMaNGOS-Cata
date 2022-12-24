@@ -22,8 +22,6 @@
 #include "Common.h"
 #include "Database.h"
 #include "Policies/Singleton.h"
-#include "ace/Thread_Mutex.h"
-#include "ace/Guard_T.h"
 #include <stdarg.h>
 
 #ifdef _WIN32
@@ -31,10 +29,10 @@
 #include <winsock2.h>
 #include <postgre/libpq-fe.h>
 #else
-#include <libpq-fe.h>
+#include <postgresql/libpq-fe.h>
 #endif
 
-class MANGOS_DLL_SPEC PostgreSQLConnection : public SqlConnection
+class PostgreSQLConnection : public SqlConnection
 {
     public:
         PostgreSQLConnection(Database& db) : SqlConnection(db), mPGconn(nullptr) {}
@@ -54,12 +52,12 @@ class MANGOS_DLL_SPEC PostgreSQLConnection : public SqlConnection
 
     private:
         bool _TransactionCmd(const char* sql);
-        bool _Query(const char* sql, PGresult** pResult, uint64* pRowCount, uint32* pFieldCount) override;
+        bool _Query(const char* sql, PGresult** pResult, uint64* pRowCount, uint32* pFieldCount);
 
         PGconn* mPGconn;
 };
 
-class MANGOS_DLL_SPEC DatabasePostgre : public Database
+class DatabasePostgre : public Database
 {
         friend class MaNGOS::OperatorNew<DatabasePostgre>;
 

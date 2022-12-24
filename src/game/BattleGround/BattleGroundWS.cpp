@@ -23,7 +23,7 @@
 #include "Entities/GameObject.h"
 #include "Globals/ObjectMgr.h"
 #include "BattleGroundMgr.h"
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 #include "Tools/Language.h"
 
 BattleGroundWS::BattleGroundWS(): m_ReputationCapture(0), m_HonorWinKills(0), m_HonorEndKills(0), m_EndTimer(0), m_LastCapturedFlagTeam()

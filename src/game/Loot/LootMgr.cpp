@@ -19,9 +19,9 @@
 #include "Loot/LootMgr.h"
 #include "Log.h"
 #include "Globals/ObjectMgr.h"
-#include "ProgressBar.h"
+#include "Util/ProgressBar.h"
 #include "World/World.h"
-#include "Util.h"
+#include "Util/Util.h"
 #include "Globals/SharedDefines.h"
 #include "Spells/SpellMgr.h"
 #include "Server/DBCStores.h"
@@ -104,8 +104,8 @@ void LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    //                                                 0      1     2                    3        4              5         6
-    QueryResult* result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, condition_id FROM %s", GetName());
+    //                                                 0      1     2       3                    4        5              6         7
+    QueryResult* result = WorldDatabase.PQuery("SELECT entry, item, `type`, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, condition_id FROM %s", GetName());
 
     if (result)
     {
@@ -118,12 +118,12 @@ void LootStore::LoadLootTable()
 
             uint32 entry               = fields[0].GetUInt32();
             uint32 item                = abs(fields[1].GetInt32());
-            uint8 type                 = fields[1].GetInt32() < 0 ? LOOTITEM_TYPE_CURRENCY : fields[1].GetInt32();
-            float  chanceOrQuestChance = fields[2].GetFloat();
-            uint8  group               = fields[3].GetUInt8();
-            int32  mincountOrRef       = fields[4].GetInt32();
-            uint32 maxcount            = fields[5].GetUInt32();
-            uint16 conditionId         = fields[6].GetUInt16();
+            uint8  type                = fields[2].GetInt32();
+            float  chanceOrQuestChance = fields[3].GetFloat();
+            uint8  group               = fields[4].GetUInt8();
+            int32  mincountOrRef       = fields[5].GetInt32();
+            uint32 maxcount            = fields[6].GetUInt32();
+            uint16 conditionId         = fields[7].GetUInt16();
 
             if (type != LOOTITEM_TYPE_CURRENCY && maxcount > std::numeric_limits<uint8>::max())
             {

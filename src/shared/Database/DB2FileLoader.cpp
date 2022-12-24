@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "DB2FileLoader.h"
+#include "Common.h"
 
 DB2FileLoader::DB2FileLoader()
 {

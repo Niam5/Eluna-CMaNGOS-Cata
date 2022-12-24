@@ -23,36 +23,44 @@
 
 using namespace MMAP;
 
-bool checkDirectories(bool debugOutput)
+bool checkDirectories(bool debugOutput, const char* workdir)
 {
     vector<string> dirFiles;
+    char maps_dir[1024];
+    char vmaps_dir[1024];
+    char mmaps_dir[1024];
+    char meshes_dir[1024];
 
-    if (getDirContents(dirFiles, "maps") == LISTFILE_DIRECTORY_NOT_FOUND || !dirFiles.size())
+    sprintf(maps_dir, "%s/%s", workdir, "maps");
+    if (getDirContents(dirFiles, maps_dir) == LISTFILE_DIRECTORY_NOT_FOUND || !dirFiles.size())
     {
-        printf("'maps' directory is empty or does not exist\n");
+        printf("'%s' directory is empty or does not exist\n", maps_dir);
         return false;
     }
 
     dirFiles.clear();
-    if (getDirContents(dirFiles, "vmaps", "*.vmtree") == LISTFILE_DIRECTORY_NOT_FOUND || !dirFiles.size())
+    sprintf(vmaps_dir, "%s/%s", workdir, "vmaps");
+    if (getDirContents(dirFiles, vmaps_dir, "*.vmtree") == LISTFILE_DIRECTORY_NOT_FOUND || !dirFiles.size())
     {
-        printf("'vmaps' directory is empty or does not exist\n");
+        printf("'%s' directory is empty or does not exist\n", vmaps_dir);
         return false;
     }
 
     dirFiles.clear();
-    if (getDirContents(dirFiles, "mmaps") == LISTFILE_DIRECTORY_NOT_FOUND)
+    sprintf(mmaps_dir, "%s/%s", workdir, "mmaps");
+    if (getDirContents(dirFiles, mmaps_dir) == LISTFILE_DIRECTORY_NOT_FOUND)
     {
-        printf("'mmaps' directory does not exist\n");
+        printf("'%s' directory does not exist\n", mmaps_dir);
         return false;
     }
 
     dirFiles.clear();
     if (debugOutput)
     {
-        if (getDirContents(dirFiles, "meshes") == LISTFILE_DIRECTORY_NOT_FOUND)
+        sprintf(meshes_dir, "%s/%s", workdir, "meshes");
+        if (getDirContents(dirFiles, meshes_dir) == LISTFILE_DIRECTORY_NOT_FOUND)
         {
-            printf("'meshes' directory does not exist (no place to put debugOutput files)\n");
+            printf("'%s' directory does not exist (no place to put debugOutput files)\n", meshes_dir);
             return false;
         }
     }
@@ -76,6 +84,7 @@ void printUsage()
     printf("--silent : Make script friendly. No wait for user input, error, completion.\n");
     printf("--offMeshInput [file.*] : Path to file containing off mesh connections data.\n\n");
     printf("--threads [#]: specifies number of threads to use for maps processing\n\n");
+    printf("--workdir [directory] : Path to basedir of maps/vmaps.\n\n");
     printf("Example:\nmovemapgen (generate all mmap with default arg\n"
            "movemapgen \"1 0 169\" (generate maps 1, 0 and 169)\n"
            "movemapgen 0 --tile 34,46 (builds only tile 34,46 of map 0)\n\n");
@@ -95,10 +104,12 @@ bool handleArgs(int argc, char** argv,
 				bool& bigBaseUnit,
                 bool& silent,
                 char*& offMeshInputPath,
-                int& threads)
-
+                int& threads,
+                char*& workdir)
 {
     char* param = NULL;
+    workdir = "./";
+
     for (int i = 1; i < argc; ++i)
     {
         if (strcmp(argv[i], "--maxAngle") == 0)
@@ -225,7 +236,7 @@ bool handleArgs(int argc, char** argv,
 
             offMeshInputPath = param;
         }
-        else if (strcmp(argv[i], "--threads") == 0)
+        else if (strcmp(argv[i], "--threads") == 0 && i + 1 < argc)
         {
             param = argv[++i];
             if (!param)
@@ -277,18 +288,20 @@ int main(int argc, char** argv)
     std::vector<uint32> mapIds;
     int threads = -1;
     int tileX = -1, tileY = -1;
-    bool skipLiquid = false,
-         skipContinents = false,
-         skipJunkMaps = true,
-         skipBattlegrounds = false,
-         debug = false,
-         silent = false,
-         bigBaseUnit = false;
+
+    bool skipLiquid = false;
+    bool skipContinents = false;
+    bool skipJunkMaps = false;
+    bool skipBattlegrounds = false;
+    bool debug = false;
+    bool silent = false;
+    bool bigBaseUnit = false;
     char* offMeshInputPath = "offmesh.txt";
+    char* workdir = NULL;
     bool validParam = handleArgs(argc, argv, mapIds,
                                  tileX, tileY, maxAngle,
                                  skipLiquid, skipContinents, skipJunkMaps, skipBattlegrounds,
-                                 debug, silent, bigBaseUnit, offMeshInputPath, threads);
+                                 debug, silent, bigBaseUnit, offMeshInputPath, threads, workdir);
     
     if (!validParam)
     {
@@ -316,7 +329,7 @@ int main(int argc, char** argv)
             return 0;
     }
 
-    if (!checkDirectories(debug))
+    if (!checkDirectories(debug, workdir))
         return -3;
 
     MapBuilder builder(threads, maxAngle, skipLiquid, skipContinents, skipJunkMaps,

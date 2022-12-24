@@ -22,7 +22,7 @@
 #include "BattleGroundDS.h"
 #include "Tools/Language.h"
 #include "Globals/ObjectMgr.h"
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 
 BattleGroundDS::BattleGroundDS()
 {

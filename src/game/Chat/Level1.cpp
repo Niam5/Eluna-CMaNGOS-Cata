@@ -18,7 +18,7 @@
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
-#include "WorldPacket.h"
+#include "Server/WorldPacket.h"
 #include "Server/WorldSession.h"
 #include "World/World.h"
 #include "Globals/ObjectMgr.h"
@@ -32,7 +32,7 @@
 #include "Grids/CellImpl.h"
 #include "Maps/MapPersistentStateMgr.h"
 #include "Mails/Mail.h"
-#include "Util.h"
+#include "Util/Util.h"
 #include "Spells/SpellMgr.h"
 #ifdef _DEBUG_VMAPS
 #include "Vmap/VMapFactory.h"

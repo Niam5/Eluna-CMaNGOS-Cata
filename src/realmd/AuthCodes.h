@@ -23,6 +23,8 @@
 #ifndef _AUTHCODES_H
 #define _AUTHCODES_H
 
+#include "Common.h"
+
 enum eAuthCmd
 {
     CMD_AUTH_LOGON_CHALLENGE        = 0x00,
@@ -54,7 +56,7 @@ enum eAuthSrvCmd
     CMD_GRUNT_SUNKEN_ONLINE         = 0x46
 };
 
-enum AuthResult
+enum AuthLogonResult : uint8
 {
     AUTH_LOGON_SUCCESS                      = 0x00,
     AUTH_LOGON_FAILED_UNKNOWN0              = 0x01,                 ///< ? Unable to connect
