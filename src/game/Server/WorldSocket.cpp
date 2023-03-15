@@ -28,6 +28,7 @@
 #include "Database/DatabaseEnv.h"
 #include "Auth/CryptoHash.h"
 #include "Server/WorldSession.h"
+#include "Util/CommonDefines.h"
 #include "Log.h"
 #include "Server/DBCStores.h"
 #ifdef BUILD_ELUNA
@@ -451,9 +452,9 @@ bool WorldSocket::HandleAuthSession(WorldPacket &recvPacket)
 
     // Re-check account ban (same check as in realmd)
     QueryResult *banresult =
-          LoginDatabase.PQuery ("SELECT 1 FROM account_banned WHERE id = %u AND active = 1 AND (unbandate > UNIX_TIMESTAMP() OR unbandate = bandate)"
+          LoginDatabase.PQuery ("SELECT 1 FROM account_banned WHERE account_id = %u AND active = 1 AND (expires_at > UNIX_TIMESTAMP() OR expires_at = banned_at)"
                                 "UNION "
-                                "SELECT 1 FROM ip_banned WHERE (unbandate = bandate OR unbandate > UNIX_TIMESTAMP()) AND ip = '%s'",
+                                "SELECT 1 FROM ip_banned WHERE (expires_at = banned_at OR expires_at > UNIX_TIMESTAMP()) AND ip = '%s'",
                                 id, GetRemoteAddress().c_str());
 
     if (banresult) // if account banned
@@ -522,8 +523,8 @@ bool WorldSocket::HandleAuthSession(WorldPacket &recvPacket)
     // No SQL injection, username escaped.
     static SqlStatementID updAccount;
 
-    SqlStatement stmt = LoginDatabase.CreateStatement(updAccount, "UPDATE account SET lockedIP = ? WHERE username = ?");
-    stmt.PExecute(address.c_str(), accountName.c_str());
+    SqlStatement stmt = LoginDatabase.CreateStatement(updAccount, "INSERT INTO account_logons(accountId,ip,loginTime,loginSource) VALUES(?,?,NOW(),?)");
+    stmt.PExecute(id, address.c_str(), std::to_string(LOGIN_TYPE_MANGOSD).c_str());
 
     m_session = new WorldSession(id, this, AccountTypes(security), expansion, mutetime, locale);
 
