@@ -9,7 +9,7 @@ env:
   REPO_DIR : ${{github.workspace}}
   BUILD_DIR: ${{github.workspace}}/bin/builddir
   BOOST_TOOLSET: "msvc"
-  BOOST_VERSION: "1.78.0"
+  BOOST_VERSION: "1.79.0"
   BOOST_PLATFORM_VERSION: "2022"
 
 jobs:
@@ -44,6 +44,8 @@ jobs:
           platform_version: ${{env.BOOST_PLATFORM_VERSION}}
           # OPTIONAL: Specify a toolset
           toolset: ${{env.BOOST_TOOLSET}}
+          # NOTE: If a boost version matching all requirements cannot be found,
+          # this build step will fail
           
       - name: Configure
         env:
