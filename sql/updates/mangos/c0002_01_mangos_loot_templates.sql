@@ -1,4 +1,4 @@
-ALTER TABLE db_version CHANGE COLUMN required_c0001_01_mangos_spell_template required_c0002_01_loot_templates bit;
+ALTER TABLE db_version CHANGE COLUMN required_c0001_01_mangos_spell_template required_c0002_01_mangos_loot_templates bit;
 
 ALTER TABLE creature_loot_template ADD `type` tinyint NOT NULL DEFAULT '0' AFTER `item`;
 ALTER TABLE disenchant_loot_template ADD `type` tinyint NOT NULL DEFAULT '0' AFTER `item`;
