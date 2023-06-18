@@ -3527,7 +3527,7 @@ int ChatHandler::GetSessionDbLocaleIndex() const
 
 const char* CliHandler::GetMangosString(int32 entry) const
 {
-    return sObjectMgr.GetMangosStringForDBCLocale(entry);
+    return sObjectMgr.GetMangosStringForDbcLocale(entry);
 }
 
 uint32 CliHandler::GetAccountId() const

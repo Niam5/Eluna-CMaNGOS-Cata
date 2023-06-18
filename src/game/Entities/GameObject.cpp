@@ -40,6 +40,7 @@
 #include "AI/ScriptDevAI/ScriptDevAIMgr.h"
 #include "Vmap/GameObjectModel.h"
 #include "Server/SQLStorages.h"
+#include "World/WorldState.h"
 #include <G3D/Quat.h>
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"
@@ -487,6 +488,8 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
         {
             switch (GetGoType())
             {
+                sWorldState.HandleGameObjectRevertState(this);
+
                 case GAMEOBJECT_TYPE_GOOBER:
                     // if gameobject should cast spell, then this, but some GOs (type = 10) should be destroyed
                     if (uint32 spellId = GetGOInfo()->goober.spellId)
@@ -1156,6 +1159,8 @@ void GameObject::Use(Unit* user)
     bool scriptReturnValue = user->GetTypeId() == TYPEID_PLAYER && sScriptDevAIMgr.OnGameObjectUse((Player*)user, this);
     if (!scriptReturnValue)
         GetMap()->ScriptsStart(sGameObjectTemplateScripts, GetEntry(), spellCaster, this);
+
+    sWorldState.HandleGameObjectUse(this, user);
 
     switch (GetGoType())
     {

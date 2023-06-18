@@ -67,6 +67,7 @@
 #include "Entities/Vehicle.h"
 #include "Calendar/Calendar.h"
 #include "Loot/LootMgr.h"
+#include "World/WorldState.h"
 
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"
@@ -650,6 +651,7 @@ void Player::CleanupsBeforeDelete()
 
     // notify zone scripts for player logout
     sOutdoorPvPMgr.HandlePlayerLeaveZone(this, m_zoneUpdateId);
+    sWorldState.HandlePlayerLeaveZone(this, m_zoneUpdateId);
 
     Unit::CleanupsBeforeDelete();
 }
@@ -7197,7 +7199,9 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     {
         // handle outdoor pvp zones
         sOutdoorPvPMgr.HandlePlayerLeaveZone(this, m_zoneUpdateId);
+        sWorldState.HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sOutdoorPvPMgr.HandlePlayerEnterZone(this, newZone);
+        sWorldState.HandlePlayerEnterZone(this, newZone);
 
         SendInitWorldStates(newZone, newArea);              // only if really enters to new zone, not just area change, works strange...
 

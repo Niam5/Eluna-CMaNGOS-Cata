@@ -69,6 +69,7 @@
 #include "Entities/CreatureLinkingMgr.h"
 #include "Calendar/Calendar.h"
 #include "Weather/Weather.h"
+#include "World/WorldState.h"
 
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"
@@ -1619,6 +1620,7 @@ void World::Update(uint32 diff)
     sMapMgr.Update(diff);
     sBattleGroundMgr.Update(diff);
     sOutdoorPvPMgr.Update(diff);
+    sWorldState.Update(diff);
 
 #ifdef BUILD_ELUNA
     ///- used by eluna

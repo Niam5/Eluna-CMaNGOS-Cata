@@ -423,6 +423,7 @@ enum ConditionType
     CONDITION_CREATURE_IN_RANGE     = 37,                   // value1: creature entry; value2: range; returns only alive creatures
     CONDITION_PVP_SCRIPT            = 38,                   // value1: zoneId; value2: conditionId (usually hardcoded in the script);
     CONDITION_SPAWN_COUNT           = 39,                   // value1: creatureId; value2: count;
+    CONDITION_WORLD_SCRIPT          = 40,
 };
 
 enum ConditionSource                                        // From where was the condition called?
@@ -993,7 +994,7 @@ class ObjectMgr
         }
 
         const char* GetMangosString(int32 entry, int locale_idx) const;
-        const char* GetMangosStringForDBCLocale(int32 entry) const { return GetMangosString(entry, DBCLocaleIndex); }
+        const char* GetMangosStringForDbcLocale(int32 entry) const { return GetMangosString(entry, DBCLocaleIndex); }
         int32 GetDBCLocaleIndex() const { return DBCLocaleIndex; }
         void SetDBCLocaleIndex(uint32 lang) { DBCLocaleIndex = GetIndexForLocale(LocaleConstant(lang)); }
 

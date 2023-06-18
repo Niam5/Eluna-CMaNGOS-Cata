@@ -516,6 +516,14 @@ void Map::Update(const uint32& t_diff)
     /// update active cells around players and active objects
     resetMarkedCells();
 
+    {
+        std::lock_guard<std::mutex> guard(m_messageMutex);
+        for (auto& message : m_messageVector)
+            message(this);
+
+        m_messageVector.clear();
+    }
+
     MaNGOS::ObjectUpdater updater(t_diff);
     // for creature
     TypeContainerVisitor<MaNGOS::ObjectUpdater, GridTypeMapContainer  > grid_object_update(updater);
@@ -2386,6 +2394,12 @@ bool Map::GetReachableRandomPosition(Unit* unit, float& x, float& y, float& z, f
     }
 
     return false;
+}
+
+void Map::AddMessage(const std::function<void(Map*)>& message)
+{
+    std::lock_guard<std::mutex> guard(m_messageMutex);
+    m_messageVector.push_back(message);
 }
 
 bool Map::IsMountAllowed() const
