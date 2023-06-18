@@ -1119,7 +1119,7 @@ void Item::SendUpdateSockets()
     for (uint32 i = SOCK_ENCHANTMENT_SLOT; i <= BONUS_ENCHANTMENT_SLOT; ++i)
         data << uint32(GetEnchantmentId(EnchantmentSlot(i)));
 
-    GetOwner()->SendDirectMessage(&data);
+    GetOwner()->SendDirectMessage(data);
 }
 
 bool Item::GemsFitSockets() const
@@ -1222,7 +1222,7 @@ void Item::SendTimeUpdate(Player* owner)
     WorldPacket data(SMSG_ITEM_TIME_UPDATE, (8 + 4));
     data << ObjectGuid(GetObjectGuid());
     data << uint32(duration);
-    owner->GetSession()->SendPacket(&data);
+    owner->GetSession()->SendPacket(data);
 }
 
 Item* Item::CreateItem(uint32 item, uint32 count, Player const* player, uint32 randomPropertyId)

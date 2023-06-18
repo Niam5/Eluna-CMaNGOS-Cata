@@ -61,7 +61,7 @@ void WorldSession::SendAuctionHello(Unit* unit)
     data << unit->GetObjectGuid();
     data << uint32(ahEntry->houseId);
     data << uint8(1);                                       // 3.3.3: 1 - AH enabled, 0 - AH disabled
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 // call this method when player bids, creates, or deletes auction
@@ -90,7 +90,7 @@ void WorldSession::SendAuctionCommandResult(AuctionEntry* auc, AuctionAction Act
             break;
     }
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 // this function sends notification, if bidder is online
@@ -107,7 +107,7 @@ void WorldSession::SendAuctionBidderNotification(AuctionEntry* auction)
     data << uint32(auction->itemTemplate);
     data << int32(auction->itemRandomPropertyId);
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 // this void causes on client to display: "Your auction sold"
@@ -132,7 +132,7 @@ void WorldSession::SendAuctionOwnerNotification(AuctionEntry* auction)
 
     data << float(timeLeft);                                // time till money arrive? only used if bid != 0
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 // shows ERR_AUCTION_REMOVED_S
@@ -143,7 +143,7 @@ void WorldSession::SendAuctionRemovedNotification(AuctionEntry* auction)
     data << uint32(auction->itemTemplate);
     data << uint32(auction->itemRandomPropertyId);
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 // this function sends mail to old bidder
@@ -569,7 +569,7 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket& recv_data)
     data.put<uint32>(0, count);                             // add count to placeholder
     data << uint32(totalcount);
     data << uint32(300);                                    // unk 2.3.0 delay for next isFull request?
-    SendPacket(&data);
+    SendPacket(data);
     DEBUG_LOG("WORLD: SMSG_AUCTION_BIDDER_LIST_RESULT");
 }
 
@@ -601,7 +601,7 @@ void WorldSession::HandleAuctionListOwnerItems(WorldPacket& recv_data)
     data.put<uint32>(0, count);
     data << uint32(totalcount);
     data << uint32(300);                                    // 2.3.0 delay for next isFull request?
-    SendPacket(&data);
+    SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_AUCTION_OWNER_LIST_RESULT");
 }
 
@@ -681,7 +681,7 @@ void WorldSession::HandleAuctionListItems(WorldPacket& recv_data)
     data.put<uint32>(0, count);
     data << uint32(totalcount);
     data << uint32(300);                                    // 2.3.0 delay for next isFull request?
-    SendPacket(&data);
+    SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_AUCTION_LIST_RESULT");
 }
 
@@ -707,6 +707,6 @@ void WorldSession::HandleAuctionListPendingSales(WorldPacket& recv_data)
         sAuctionMgr.GetAuctionsMap(AuctionHouseType(i))->BuildListPendingSales(data, _player, count);
 
     data.put<uint32>(0, count);
-    SendPacket(&data);
+    SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_AUCTION_LIST_PENDING_SALES");
 }

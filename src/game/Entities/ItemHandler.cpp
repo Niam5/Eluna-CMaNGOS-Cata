@@ -304,7 +304,7 @@ void WorldSession::HandleReadItemOpcode(WorldPacket& recv_data)
             _player->SendEquipError(msg, pItem, nullptr);
         }
         data << pItem->GetObjectGuid();
-        SendPacket(&data);
+        SendPacket(data);
     }
     else
         _player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
@@ -702,7 +702,7 @@ void WorldSession::SendListInventory(ObjectGuid vendorguid)
     data << uint8(count == 0);
     data.WriteGuidBytes<2, 3, 7>(vendorguid);
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket& recv_data)
@@ -912,7 +912,7 @@ void WorldSession::SendEnchantmentLog(ObjectGuid targetGuid, ObjectGuid casterGu
     data << casterGuid.WriteAsPacked();
     data << uint32(itemId);
     data << uint32(enchantId);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendItemEnchantTimeUpdate(ObjectGuid playerGuid, ObjectGuid itemGuid, uint32 slot, uint32 duration)
@@ -923,7 +923,7 @@ void WorldSession::SendItemEnchantTimeUpdate(ObjectGuid playerGuid, ObjectGuid i
     data << uint32(slot);
     data << uint32(duration);
     data << ObjectGuid(playerGuid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleWrapItemOpcode(WorldPacket& recv_data)
@@ -1318,7 +1318,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket& recv_data)
     {
         data << uint8(1);                                   // no text
     }
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendItemDb2Reply(uint32 entry)
@@ -1331,7 +1331,7 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
         data << uint32(DB2_REPLY_ITEM);
         data << uint32(time(NULL)); // hotfix date
         data << uint32(0);          // size of next block
-        SendPacket(&data);
+        SendPacket(data);
         return;
     }
 
@@ -1352,7 +1352,7 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
     data << uint32(buff.size());
     data.append(buff);
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendItemSparseDb2Reply(uint32 entry)
@@ -1365,7 +1365,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
         data << uint32(DB2_REPLY_SPARSE);
         data << uint32(time(NULL)); // hotfix date
         data << uint32(0);          // size of next block
-        SendPacket(&data);
+        SendPacket(data);
         return;
     }
 
@@ -1485,5 +1485,5 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     data << uint32(buff.size());
     data.append(buff);
 
-    SendPacket(&data);
+    SendPacket(data);
 }

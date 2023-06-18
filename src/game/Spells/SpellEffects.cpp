@@ -298,7 +298,7 @@ void Spell::EffectInstaKill(SpellEffectEntry const* /*effect*/)
     data << (caster && caster->GetTypeId() != TYPEID_GAMEOBJECT ? m_caster->GetObjectGuid() : ObjectGuid()); // Caster GUID
     data << unitTarget->GetObjectGuid();                    // Victim GUID
     data << uint32(m_spellInfo->Id);
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 
     m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, m_spellInfo, false);
 }
@@ -1050,7 +1050,7 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                         {
                             WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
                             data << unitTarget->GetObjectGuid();
-                            ((Player*)caster)->GetSession()->SendPacket(&data);
+                            ((Player*)caster)->GetSession()->SendPacket(data);
                         }
                     }
 
@@ -6113,7 +6113,7 @@ bool Spell::DoSummonTotem(SpellEffectEntry const* effect, uint8 slot_dbc)
         data << pTotem->GetObjectGuid();
         data << uint32(m_duration);
         data << uint32(m_spellInfo->Id);
-        ((Player*)m_caster)->SendDirectMessage(&data);
+        ((Player*)m_caster)->SendDirectMessage(data);
     }
 
     pTotem->Summon(m_caster);
@@ -6419,7 +6419,7 @@ void Spell::EffectDispel(SpellEffectEntry const* effect)
                 data << uint8(0);                           // 0 - dispelled !=0 cleansed
                 unitTarget->RemoveAuraHolderDueToSpellByDispel(dispelledHolder->GetId(), j->second, dispelledHolder->GetCasterGuid(), m_caster);
             }
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->SendMessageToSet(data, true);
 
             // On success dispel
             // Devour Magic
@@ -6439,7 +6439,7 @@ void Spell::EffectDispel(SpellEffectEntry const* effect)
             data << uint32(m_spellInfo->Id);                // Dispel spell id
             for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
                 data << uint32(*j);                         // Spell Id
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->SendMessageToSet(data, true);
         }
     }
 }
@@ -10631,8 +10631,8 @@ void Spell::EffectDuel(SpellEffectEntry const* effect)
     WorldPacket data(SMSG_DUEL_REQUESTED, 8 + 8);
     data << pGameObj->GetObjectGuid();
     data << caster->GetObjectGuid();
-    caster->GetSession()->SendPacket(&data);
-    target->GetSession()->SendPacket(&data);
+    caster->GetSession()->SendPacket(data);
+    target->GetSession()->SendPacket(data);
 
     // create duel-info
     DuelInfo* duel   = new DuelInfo;
@@ -10725,7 +10725,7 @@ void Spell::EffectSummonPlayer(SpellEffectEntry const* /*effect*/)
     data << m_caster->GetObjectGuid();                      // summoner guid
     data << uint32(m_caster->GetZoneId());                  // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY * IN_MILLISECONDS); // auto decline after msecs
-    ((Player*)unitTarget)->GetSession()->SendPacket(&data);
+    ((Player*)unitTarget)->GetSession()->SendPacket(data);
 }
 
 static ScriptInfo generateActivateCommand()
@@ -11534,7 +11534,7 @@ void Spell::EffectBreakPlayerTargeting (SpellEffectEntry const* /*effect*/)
 
     WorldPacket data(SMSG_CLEAR_TARGET, 8);
     data << unitTarget->GetObjectGuid();
-    unitTarget->SendMessageToSet(&data, false);
+    unitTarget->SendMessageToSet(data, false);
 }
 
 void Spell::EffectDurabilityDamage(SpellEffectEntry const* effect)
@@ -11894,7 +11894,7 @@ void Spell::EffectStealBeneficialBuff(SpellEffectEntry const* effect)
                 data << uint8(0);                    // 0 - steals !=0 transfers
                 unitTarget->RemoveAurasDueToSpellBySteal(spellInfo->Id, j->second, m_caster);
             }
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->SendMessageToSet(data, true);
         }
     }
 }
@@ -12136,7 +12136,7 @@ void Spell::EffectBind(SpellEffectEntry const* effect)
     data << float(loc.coord_z);
     data << uint32(loc.mapid);
     data << uint32(area_id);
-    player->SendDirectMessage(&data);
+    player->SendDirectMessage(data);
 
     DEBUG_LOG("New Home Position for %s: XYZ: %f %f %f on Map %u", player->GetGuidStr().c_str(), loc.coord_x, loc.coord_y, loc.coord_z, loc.mapid);
 
@@ -12144,7 +12144,7 @@ void Spell::EffectBind(SpellEffectEntry const* effect)
     data.Initialize(SMSG_PLAYERBOUND, 8 + 4);
     data << m_caster->GetObjectGuid();
     data << uint32(area_id);
-    player->SendDirectMessage(&data);
+    player->SendDirectMessage(data);
 }
 
 void Spell::EffectRestoreItemCharges(SpellEffectEntry const* effect)
@@ -12197,12 +12197,12 @@ void Spell::EffectTeachTaxiNode(SpellEffectEntry const* effect)
     if (player->m_taxi.SetTaximaskNode(taxiNodeId))
     {
         WorldPacket data(SMSG_NEW_TAXI_PATH, 0);
-        player->SendDirectMessage(&data);
+        player->SendDirectMessage(data);
 
         data.Initialize(SMSG_TAXINODE_STATUS, 9);
         data << m_caster->GetObjectGuid();
         data << uint8(1);
-        player->SendDirectMessage(&data);
+        player->SendDirectMessage(data);
     }
 }
 

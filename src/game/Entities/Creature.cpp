@@ -1882,7 +1882,7 @@ void Creature::SendAIReaction(AiReaction reactionType)
     data << GetObjectGuid();
     data << uint32(reactionType);
 
-    ((WorldObject*)this)->SendMessageToSet(&data, true);
+    ((WorldObject*)this)->SendMessageToSet(data, true);
 
     DEBUG_FILTER_LOG(LOG_FILTER_AI_AND_MOVEGENSS, "WORLD: Sent SMSG_AI_REACTION, type %u.", reactionType);
 }
@@ -2584,7 +2584,7 @@ void Creature::SendAreaSpiritHealerQueryOpcode(Player* pl)
     WorldPacket data(SMSG_AREA_SPIRIT_HEALER_TIME, 8 + 4);
     data << ObjectGuid(GetObjectGuid());
     data << uint32(next_resurrect);
-    pl->SendDirectMessage(&data);
+    pl->SendDirectMessage(data);
 }
 
 void Creature::ApplyGameEventSpells(GameEventCreatureData const* eventData, bool activated)
@@ -2702,7 +2702,7 @@ void Creature::SetWalk(bool enable, bool asDefault)
             data.WriteGuidBytes<7, 0, 4, 6, 5, 1, 2, 3>(GetObjectGuid());
         }
 
-        SendMessageToSet(&data, true);
+        SendMessageToSet(data, true);
     }
 }
 
@@ -2727,7 +2727,7 @@ void Creature::SetLevitate(bool enable)
             data.WriteGuidBytes<7, 3, 4, 2, 1, 6, 0, 5>(GetObjectGuid());
         }
 
-        SendMessageToSet(&data, true);
+        SendMessageToSet(data, true);
     }
 }
 
@@ -2741,7 +2741,7 @@ void Creature::SetSwim(bool enable)
     // ToDo: fix this!
     /*WorldPacket data(enable ? SMSG_SPLINE_MOVE_START_SWIM : SMSG_SPLINE_MOVE_STOP_SWIM);
     data << GetPackGUID();
-    SendMessageToSet(&data, true);*/
+    SendMessageToSet(data, true);*/
 }
 
 void Creature::SetCanFly(bool enable)
@@ -2754,7 +2754,7 @@ void Creature::SetCanFly(bool enable)
     // ToDo: fix this!
     /*WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
-    SendMessageToSet(&data, true);*/
+    SendMessageToSet(data, true);*/
 }
 
 void Creature::SetFeatherFall(bool enable)
@@ -2767,7 +2767,7 @@ void Creature::SetFeatherFall(bool enable)
     // ToDo: fix this!
     /*WorldPacket data(enable ? SMSG_SPLINE_MOVE_FEATHER_FALL : SMSG_SPLINE_MOVE_NORMAL_FALL);
     data << GetPackGUID();
-    SendMessageToSet(&data, true);*/
+    SendMessageToSet(data, true);*/
 }
 
 void Creature::SetHover(bool enable)
@@ -2794,7 +2794,7 @@ void Creature::SetHover(bool enable)
             RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_FLY_ANIM);
         }
 
-        SendMessageToSet(&data, true);
+        SendMessageToSet(data, true);
     }
 }
 
@@ -2819,7 +2819,7 @@ void Creature::SetRoot(bool enable)
             data.WriteGuidBytes<6, 3, 1, 5, 2, 0, 7, 4>(GetObjectGuid());
         }
 
-        SendMessageToSet(&data, true);
+        SendMessageToSet(data, true);
     }
 }
 
@@ -2844,7 +2844,7 @@ void Creature::SetWaterWalk(bool enable)
             data.WriteGuidBytes<5, 7, 3, 4, 1, 2, 0, 6>(GetObjectGuid());
         }
 
-        SendMessageToSet(&data, true);
+        SendMessageToSet(data, true);
     }
 }
 

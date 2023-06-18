@@ -466,7 +466,7 @@ void Transport::TeleportTransport(uint32 newMapid, float x, float y, float z)
 
         // WorldPacket data(SMSG_811, 4);
         // data << uint32(0);
-        // plr->GetSession()->SendPacket(&data);
+        // plr->GetSession()->SendPacket(data);
     }
 
     // we need to create and save new Map object with 'newMapid' because if not done -> lead to invalid Map object reference...
@@ -556,13 +556,13 @@ void Transport::UpdateForMap(Map const* targetMap)
                 UpdateData transData(itr->getSource()->GetMapId());
                 BuildCreateUpdateBlockForPlayer(&transData, itr->getSource());
                 WorldPacket packet;
-                transData.BuildPacket(&packet);
+                transData.BuildPacket(packet);
 
                 // Prevent sending transport maps in player update object
                 if (packet.ReadUInt16() != itr->getSource()->GetMapId())
                     return;
 
-                itr->getSource()->SendDirectMessage(&packet);
+                itr->getSource()->SendDirectMessage(packet);
             }
         }
     }
@@ -571,7 +571,7 @@ void Transport::UpdateForMap(Map const* targetMap)
         UpdateData transData(GetMapId());
         BuildOutOfRangeUpdateBlock(&transData);
         WorldPacket out_packet;
-        transData.BuildPacket(&out_packet);
+        transData.BuildPacket(out_packet);
 
         for (Map::PlayerList::const_iterator itr = pl.begin(); itr != pl.end(); ++itr)
         {
@@ -581,7 +581,7 @@ void Transport::UpdateForMap(Map const* targetMap)
                 if (out_packet.ReadUInt16() != itr->getSource()->GetMapId())
                     return;
 
-                itr->getSource()->SendDirectMessage(&out_packet);
+                itr->getSource()->SendDirectMessage(out_packet);
             }
         }
     }

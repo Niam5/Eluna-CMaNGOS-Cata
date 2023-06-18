@@ -124,7 +124,7 @@ void PlayerbotMgr::HandleMasterIncomingPacket(const WorldPacket& packet)
             p << uint32(PETITION_SIGN_OK);
 
             // close at signer side
-            GetMaster()->GetSession()->SendPacket(&p);
+            GetMaster()->GetSession()->SendPacket(p);
 
             return;
         }

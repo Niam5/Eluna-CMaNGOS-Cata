@@ -244,10 +244,10 @@ class WorldSession
 
         void SizeError(WorldPacket const& packet, uint32 size) const;
 
-        void ReadAddonsInfo(ByteBuffer &data);
+        void ReadAddonsInfo(ByteBuffer data);
         void SendAddonsInfo();
 
-        void SendPacket(WorldPacket const* packet);
+        void SendPacket(WorldPacket const& packet) const;
         void SendNotification(const char* format, ...) ATTR_PRINTF(2, 3);
         void SendNotification(int32 string_id, ...);
         void SendPetNameInvalid(uint32 error, const std::string& name, DeclinedName* declinedName);
@@ -394,7 +394,7 @@ class WorldSession
         void SendSaveGuildEmblem(uint32 msg);
         void SendGuildInvite(Player* player);
 
-        void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data);
+        void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket& data);
 
         // Account mute time
         time_t m_muteTime;
@@ -900,7 +900,7 @@ class WorldSession
 
         // logging helper
         void LogUnexpectedOpcode(WorldPacket const& packet, const char* reason);
-        void LogUnprocessedTail(WorldPacket &packet);
+        void LogUnprocessedTail(WorldPacket packet);
 
         uint32 m_GUIDLow;                                   // set logged or recently logout player (while m_playerRecentlyLogout set)
         Player * _player;

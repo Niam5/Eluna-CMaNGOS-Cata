@@ -743,5 +743,5 @@ void WorldSession::HandleGetMirrorimageData(WorldPacket& recv_data)
             data << (uint32)0;
     }
 
-    SendPacket(&data);
+    SendPacket(data);
 }

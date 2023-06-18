@@ -82,7 +82,7 @@ void WorldSession::SendGuildInvite(Player* player)
     WorldPacket data(SMSG_GUILD_INVITE, (8 + 10));          // guess size
     data << GetPlayer()->GetName();
     data << guild->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->GetSession()->SendPacket(data);
 }
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
@@ -191,7 +191,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     data.WriteGuidBytes<5, 3>(newGuild);
     data.WriteGuidBytes<4>(oldGuild);
 
-    player->GetSession()->SendPacket(&data);
+    player->GetSession()->SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent (SMSG_GUILD_INVITE)");
 }
@@ -313,7 +313,7 @@ void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
     data << uint32(secsToTimeBitFields(guild->GetCreatedDate())); // 3.x (prev. day + month + year)
     data << uint32(guild->GetMemberSize());                 // amount of chars
     data << uint32(guild->GetAccountsNumber());             // amount of accounts
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleGuildRosterOpcode(WorldPacket& recvPacket)
@@ -913,7 +913,7 @@ void WorldSession::SendGuildCommandResult(uint32 typecmd, const std::string& str
     data << cmdresult;
     data.WriteBits(str.length(), 8);
     data.WriteStringData(str);
-    SendPacket(&data);
+    SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent (SMSG_GUILD_COMMAND_RESULT)");
 }
@@ -1034,7 +1034,7 @@ void WorldSession::HandleGuildPermissions(WorldPacket& /* recv_data */)
                 data << uint32(pGuild->GetBankRights(rankId, uint8(i)));
                 data << uint32(pGuild->GetMemberSlotWithdrawRem(GetPlayer()->GetGUIDLow(), uint8(i)));
             }
-            SendPacket(&data);
+            SendPacket(data);
             DEBUG_LOG("WORLD: Sent (SMSG_GUILD_PERMISSIONS)");
         }
     }
@@ -1454,7 +1454,7 @@ void WorldSession::SendSaveGuildEmblem(uint32 msg)
 {
     WorldPacket data(MSG_SAVE_GUILD_EMBLEM, 4);
     data << uint32(msg);                                    // not part of guild
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleGuildQueryRanksOpcode(WorldPacket& recv_data)

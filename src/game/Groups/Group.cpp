@@ -390,7 +390,7 @@ uint32 Group::RemoveMember(ObjectGuid guid, uint8 method)
             if (method == 1)
             {
                 data.Initialize(SMSG_GROUP_UNINVITE, 0);
-                player->GetSession()->SendPacket(&data);
+                player->GetSession()->SendPacket(data);
             }
 
             // we already removed player from group and in player->GetGroup() is his original group!
@@ -403,7 +403,7 @@ uint32 Group::RemoveMember(ObjectGuid guid, uint8 method)
                 data.Initialize(SMSG_GROUP_LIST, 1 + 1 + 1 + 1 + 8 + 4 + 4 + 8);
                 data << uint8(0x10) << uint8(0) << uint8(0) << uint8(0);
                 data << uint64(0) << uint32(0) << uint32(0) << uint64(0);
-                player->GetSession()->SendPacket(&data);
+                player->GetSession()->SendPacket(data);
             }
 
             _homebindIfInstance(player);
@@ -413,7 +413,7 @@ uint32 Group::RemoveMember(ObjectGuid guid, uint8 method)
         {
             WorldPacket data(SMSG_GROUP_SET_LEADER, (m_leaderName.size() + 1));
             data << m_leaderName;
-            BroadcastPacket(&data, true);
+            BroadcastPacket(data, true);
         }
 
         SendUpdate();
@@ -447,7 +447,7 @@ void Group::ChangeLeader(ObjectGuid guid)
 
     WorldPacket data(SMSG_GROUP_SET_LEADER, slot->name.size() + 1);
     data << slot->name;
-    BroadcastPacket(&data, true);
+    BroadcastPacket(data, true);
     SendUpdate();
 }
 
@@ -485,7 +485,7 @@ void Group::Disband(bool hideDestroy)
         if (!hideDestroy)
         {
             data.Initialize(SMSG_GROUP_DESTROYED, 0);
-            player->GetSession()->SendPacket(&data);
+            player->GetSession()->SendPacket(data);
         }
 
         // we already removed player from group and in player->GetGroup() is his original group, send update
@@ -498,7 +498,7 @@ void Group::Disband(bool hideDestroy)
             data.Initialize(SMSG_GROUP_LIST, 1 + 1 + 1 + 1 + 8 + 4 + 4 + 8);
             data << uint8(0x10) << uint8(0) << uint8(0) << uint8(0);
             data << uint64(0) << uint32(0) << uint32(0) << uint64(0);
-            player->GetSession()->SendPacket(&data);
+            player->GetSession()->SendPacket(data);
         }
 
         _homebindIfInstance(player);
@@ -544,7 +544,7 @@ void Group::SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid)
     data << whoGuid;
     data << uint8(id);
     data << targetGuid;
-    BroadcastPacket(&data, true);
+    BroadcastPacket(data, true);
 }
 
 static void GetDataForXPAtKill_helper(Player* player, Unit const* victim, uint32& sum_level, Player*& member_with_max_level, Player*& not_gray_member_with_max_level)
@@ -605,7 +605,7 @@ void Group::SendTargetIconList(WorldSession* session)
         data << m_targetIcons[i];
     }
 
-    session->SendPacket(&data);
+    session->SendPacket(data);
 }
 
 void Group::SendUpdate()
@@ -653,7 +653,7 @@ void Group::SendUpdate()
             data << uint8(m_raidDifficulty);                // Raid Difficulty
             data << uint8(0);                               // 3.3, dynamic difficulty?
         }
-        player->GetSession()->SendPacket(&data);
+        player->GetSession()->SendPacket(data);
     }
 }
 
@@ -666,12 +666,12 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
         return;
 
     WorldPacket data;
-    pPlayer->GetSession()->BuildPartyMemberStatsChangedPacket(pPlayer, &data);
+    pPlayer->GetSession()->BuildPartyMemberStatsChangedPacket(pPlayer, data);
 
     for (GroupReference* itr = GetFirstMember(); itr != nullptr; itr = itr->next())
         if (Player* player = itr->getSource())
             if (player != pPlayer && !player->HaveAtClient(pPlayer))
-                player->GetSession()->SendPacket(&data);
+                player->GetSession()->SendPacket(data);
 }
 
 void Group::UpdatePlayerOnlineStatus(Player* player, bool online /*= true*/)
@@ -714,7 +714,7 @@ void Group::UpdateOfflineLeader(time_t time, uint32 delay)
     _chooseLeader(true);
 }
 
-void Group::BroadcastPacket(WorldPacket* packet, bool ignorePlayersInBGRaid, int group, ObjectGuid ignore)
+void Group::BroadcastPacket(WorldPacket const& packet, bool ignorePlayersInBGRaid, int group, ObjectGuid ignore)
 {
     for (GroupReference* itr = GetFirstMember(); itr != nullptr; itr = itr->next())
     {
@@ -727,7 +727,7 @@ void Group::BroadcastPacket(WorldPacket* packet, bool ignorePlayersInBGRaid, int
     }
 }
 
-void Group::BroadcastReadyCheck(WorldPacket* packet)
+void Group::BroadcastReadyCheck(WorldPacket const& packet)
 {
     for (GroupReference* itr = GetFirstMember(); itr != nullptr; itr = itr->next())
     {
@@ -748,7 +748,7 @@ void Group::OfflineReadyCheck()
             WorldPacket data(MSG_RAID_READY_CHECK_CONFIRM, 9);
             data << citr->guid;
             data << uint8(0);
-            BroadcastReadyCheck(&data);
+            BroadcastReadyCheck(data);
         }
     }
 }

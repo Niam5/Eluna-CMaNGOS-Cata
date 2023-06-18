@@ -417,8 +417,8 @@ void BattleGroundQueue::RemovePlayer(ObjectGuid guid, bool decreaseInvitedCount)
             plr2->RemoveBattleGroundQueueId(bgQueueTypeId); // must be called this way, because if you move this call to
             // queue->removeplayer, it causes bugs
             WorldPacket data;
-            sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, plr2, queueSlot, STATUS_NONE, 0, 0, ARENA_TYPE_NONE);
-            plr2->GetSession()->SendPacket(&data);
+            sBattleGroundMgr.BuildBattleGroundStatusPacket(data, bg, plr2, queueSlot, STATUS_NONE, 0, 0, ARENA_TYPE_NONE);
+            plr2->GetSession()->SendPacket(data);
         }
         // then actually delete, this may delete the group as well!
         RemovePlayer(group->Players.begin()->first, decreaseInvitedCount);
@@ -499,8 +499,8 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, BattleGround* bg,
                       plr->GetGuidStr().c_str(), bg->GetInstanceID(), queueSlot, bg->GetTypeID());
 
             // send status packet
-            sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, plr, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0, ginfo->arenaType);
-            plr->GetSession()->SendPacket(&data);
+            sBattleGroundMgr.BuildBattleGroundStatusPacket(data, bg, plr, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0, ginfo->arenaType);
+            plr->GetSession()->SendPacket(data);
         }
         return true;
     }
@@ -1063,8 +1063,8 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         {
             WorldPacket data;
             // we must send remaining time in queue
-            sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, plr, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, 0, m_ArenaType);
-            plr->GetSession()->SendPacket(&data);
+            sBattleGroundMgr.BuildBattleGroundStatusPacket(data, bg, plr, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME - INVITATION_REMIND_TIME, 0, m_ArenaType);
+            plr->GetSession()->SendPacket(data);
         }
     }
     return true;                                            // event will be deleted
@@ -1111,8 +1111,8 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                 sBattleGroundMgr.ScheduleQueueUpdate(0, ARENA_TYPE_NONE, m_BgQueueTypeId, m_BgTypeId, bg->GetBracketId());
 
             WorldPacket data;
-            sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, plr, queueSlot, STATUS_NONE, 0, 0, ARENA_TYPE_NONE);
-            plr->GetSession()->SendPacket(&data);
+            sBattleGroundMgr.BuildBattleGroundStatusPacket(data, bg, plr, queueSlot, STATUS_NONE, 0, 0, ARENA_TYPE_NONE);
+            plr->GetSession()->SendPacket(data);
         }
     }
 
@@ -1204,7 +1204,7 @@ void BattleGroundMgr::Update(uint32 diff)
     }
 }
 
-void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket* data, BattleGround* bg, Player* player, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, ArenaType arenatype)
+void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket& data, BattleGround* bg, Player* player, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, ArenaType arenatype)
 {
     // we can be in 2 queues in same time...
     if (!bg)
@@ -1221,198 +1221,198 @@ void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket* data, BattleGro
     {
         case STATUS_NONE:
         {
-            data->Initialize(SMSG_BATTLEFIELD_STATUS);
+            data.Initialize(SMSG_BATTLEFIELD_STATUS);
 
-            data->WriteGuidMask<0, 4, 7, 1, 6, 3, 5, 2>(playerGuid);
-            data->WriteGuidBytes<5, 6, 7, 2>(playerGuid);
-            *data << uint32(QueueSlot);                 // not queue slot
-            data->WriteGuidBytes<3, 1>(playerGuid);
-            *data << uint32(QueueSlot);                 // Queue slot
-            *data << uint32(bg->GetStartTime());
-            data->WriteGuidBytes<0, 4>(playerGuid);
+            data.WriteGuidMask<0, 4, 7, 1, 6, 3, 5, 2>(playerGuid);
+            data.WriteGuidBytes<5, 6, 7, 2>(playerGuid);
+            data << uint32(QueueSlot);                 // not queue slot
+            data.WriteGuidBytes<3, 1>(playerGuid);
+            data << uint32(QueueSlot);                 // Queue slot
+            data << uint32(bg->GetStartTime());
+            data.WriteGuidBytes<0, 4>(playerGuid);
             break;
         }
         case STATUS_WAIT_QUEUE:
         {
-            data->Initialize(SMSG_BATTLEFIELD_STATUS_QUEUED);
+            data.Initialize(SMSG_BATTLEFIELD_STATUS_QUEUED);
 
-            data->WriteGuidMask<3, 0>(playerGuid);
-            data->WriteGuidMask<3>(bgGuid);
-            data->WriteGuidMask<2>(playerGuid);
-            data->WriteBit(1);                          // eligible in queue
-            data->WriteBit(0);                          // Join Failed
-            data->WriteGuidMask<2>(bgGuid);
-            data->WriteGuidMask<1>(playerGuid);
-            data->WriteGuidMask<0, 6, 4>(bgGuid);
-            data->WriteGuidMask<6, 7>(playerGuid);
-            data->WriteGuidMask<7, 5>(bgGuid);
-            data->WriteGuidMask<4, 5>(playerGuid);
-            data->WriteBit(bg->isRated());              // is rated bg or arena. if israted => cant exit (wtf?)
-            data->WriteBit(0);                          // Waiting On Other Activity 4
-            data->WriteGuidMask<1>(bgGuid);
+            data.WriteGuidMask<3, 0>(playerGuid);
+            data.WriteGuidMask<3>(bgGuid);
+            data.WriteGuidMask<2>(playerGuid);
+            data.WriteBit(1);                          // eligible in queue
+            data.WriteBit(0);                          // Join Failed
+            data.WriteGuidMask<2>(bgGuid);
+            data.WriteGuidMask<1>(playerGuid);
+            data.WriteGuidMask<0, 6, 4>(bgGuid);
+            data.WriteGuidMask<6, 7>(playerGuid);
+            data.WriteGuidMask<7, 5>(bgGuid);
+            data.WriteGuidMask<4, 5>(playerGuid);
+            data.WriteBit(bg->isRated());              // is rated bg or arena. if israted => cant exit (wtf?)
+            data.WriteBit(0);                          // Waiting On Other Activity 4
+            data.WriteGuidMask<1>(bgGuid);
 
-            data->WriteGuidBytes<0>(playerGuid);
-            *data << uint32(QueueSlot);                 // unk 5 - received in battlefield port then
-            data->WriteGuidBytes<5>(bgGuid);
-            data->WriteGuidBytes<3>(playerGuid);
-            *data << uint32(Time1);                     // Estimated Wait Time 6 time1
-            data->WriteGuidBytes<7, 1, 2>(bgGuid);
-            *data << uint8(0);                          // unk param
-            data->WriteGuidBytes<4>(bgGuid);
-            data->WriteGuidBytes<2>(playerGuid);
+            data.WriteGuidBytes<0>(playerGuid);
+            data << uint32(QueueSlot);                 // unk 5 - received in battlefield port then
+            data.WriteGuidBytes<5>(bgGuid);
+            data.WriteGuidBytes<3>(playerGuid);
+            data << uint32(Time1);                     // Estimated Wait Time 6 time1
+            data.WriteGuidBytes<7, 1, 2>(bgGuid);
+            data << uint8(0);                          // unk param
+            data.WriteGuidBytes<4>(bgGuid);
+            data.WriteGuidBytes<2>(playerGuid);
             //if (...)
             //    *data << uint8(playerCount);          // player count (XvX) > 0 && rated: Rated XvX, !rated: Skirmish XvX. if ==0 >= Bg type
             //else
-                *data << uint8(arenatype);
-            data->WriteGuidBytes<6>(bgGuid);
-            data->WriteGuidBytes<7>(playerGuid);
-            data->WriteGuidBytes<3>(bgGuid);
-            data->WriteGuidBytes<6>(playerGuid);
-            data->WriteGuidBytes<0>(bgGuid);
-            *data << uint32(0);                         // Time
-            *data << uint32(QueueSlot);                 // queueslot
-            *data << uint8(0);                          // maxlevel? seen 85 only in sniffs
-            *data << uint32(Time2);                     // unk 10 Time since started time2
-            data->WriteGuidBytes<1, 5>(playerGuid);
-            *data << uint32(bg->GetClientInstanceID()); // client instance id
-            data->WriteGuidBytes<4>(playerGuid);
+            data << uint8(arenatype);
+            data.WriteGuidBytes<6>(bgGuid);
+            data.WriteGuidBytes<7>(playerGuid);
+            data.WriteGuidBytes<3>(bgGuid);
+            data.WriteGuidBytes<6>(playerGuid);
+            data.WriteGuidBytes<0>(bgGuid);
+            data << uint32(0);                         // Time
+            data << uint32(QueueSlot);                 // queueslot
+            data << uint8(0);                          // maxlevel? seen 85 only in sniffs
+            data << uint32(Time2);                     // unk 10 Time since started time2
+            data.WriteGuidBytes<1, 5>(playerGuid);
+            data << uint32(bg->GetClientInstanceID()); // client instance id
+            data.WriteGuidBytes<4>(playerGuid);
             break;
         }
         case STATUS_WAIT_JOIN:
         {
-            data->Initialize(SMSG_BATTLEFIELD_STATUS_NEEDCONFIRMATION, 44);
+            data.Initialize(SMSG_BATTLEFIELD_STATUS_NEEDCONFIRMATION, 44);
 
-            *data << uint32(bg->GetClientInstanceID()); // Client Instance ID
-            *data << uint32(Time1);                     // Time until closed
+            data << uint32(bg->GetClientInstanceID()); // Client Instance ID
+            data << uint32(Time1);                     // Time until closed
             //*data << uint8(bg->GetPlayersCountByTeam(bg->GetPlayerTeam(playerGuid)));
-            *data << uint8(0);                          // unk 0
-            *data << uint32(QueueSlot);                 // Queue slot
-            *data << uint32(0);                         // Time
-            *data << uint8(0);                          // Max Level
-            *data << uint32(QueueSlot);                 // not queueslot
-            *data << uint32(bg->GetMapId());            // Map Id
+            data << uint8(0);                          // unk 0
+            data << uint32(QueueSlot);                 // Queue slot
+            data << uint32(0);                         // Time
+            data << uint8(0);                          // Max Level
+            data << uint32(QueueSlot);                 // not queueslot
+            data << uint32(bg->GetMapId());            // Map Id
             //if (...)
             //    *data << uint8(playerCount);          // player count (XvX) > 0 && rated: Rated XvX, !rated: Skirmish XvX. if ==0 >= Bg type
             //else
-                *data << uint8(arenatype);
+            data << uint8(arenatype);
 
-            data->WriteGuidMask<5, 2, 1>(playerGuid);
-            data->WriteGuidMask<2>(bgGuid);
-            data->WriteGuidMask<4>(playerGuid);
-            data->WriteGuidMask<6, 3>(bgGuid);
-            data->WriteBit(bg->isRated());              // Is Rated
-            data->WriteGuidMask<7, 3>(playerGuid);
-            data->WriteGuidMask<7, 0, 4>(bgGuid);
-            data->WriteGuidMask<6>(playerGuid);
-            data->WriteGuidMask<5, 1>(bgGuid);
-            data->WriteGuidMask<0>(playerGuid);
+            data.WriteGuidMask<5, 2, 1>(playerGuid);
+            data.WriteGuidMask<2>(bgGuid);
+            data.WriteGuidMask<4>(playerGuid);
+            data.WriteGuidMask<6, 3>(bgGuid);
+            data.WriteBit(bg->isRated());              // Is Rated
+            data.WriteGuidMask<7, 3>(playerGuid);
+            data.WriteGuidMask<7, 0, 4>(bgGuid);
+            data.WriteGuidMask<6>(playerGuid);
+            data.WriteGuidMask<5, 1>(bgGuid);
+            data.WriteGuidMask<0>(playerGuid);
 
-            data->WriteGuidBytes<6, 5, 7, 2>(bgGuid);
-            data->WriteGuidBytes<0, 7>(playerGuid);
-            data->WriteGuidBytes<4>(bgGuid);
-            data->WriteGuidBytes<1>(playerGuid);
-            data->WriteGuidBytes<0>(bgGuid);
-            data->WriteGuidBytes<4>(playerGuid);
-            data->WriteGuidBytes<1>(bgGuid);
-            data->WriteGuidBytes<5>(playerGuid);
-            data->WriteGuidBytes<3>(bgGuid);
-            data->WriteGuidBytes<6, 2, 3>(playerGuid);
+            data.WriteGuidBytes<6, 5, 7, 2>(bgGuid);
+            data.WriteGuidBytes<0, 7>(playerGuid);
+            data.WriteGuidBytes<4>(bgGuid);
+            data.WriteGuidBytes<1>(playerGuid);
+            data.WriteGuidBytes<0>(bgGuid);
+            data.WriteGuidBytes<4>(playerGuid);
+            data.WriteGuidBytes<1>(bgGuid);
+            data.WriteGuidBytes<5>(playerGuid);
+            data.WriteGuidBytes<3>(bgGuid);
+            data.WriteGuidBytes<6, 2, 3>(playerGuid);
             break;
         }
         case STATUS_IN_PROGRESS:
         {
-            data->Initialize(SMSG_BATTLEFIELD_STATUS_ACTIVE, 49);
+            data.Initialize(SMSG_BATTLEFIELD_STATUS_ACTIVE, 49);
 
-            data->WriteGuidMask<2, 7>(playerGuid);
-            data->WriteGuidMask<7, 1>(bgGuid);
-            data->WriteGuidMask<5>(playerGuid);
-            data->WriteBit(bg->GetPlayerTeam(playerGuid) == ALLIANCE);  // Bg faction bit
-            data->WriteGuidMask<0>(bgGuid);
-            data->WriteGuidMask<1>(playerGuid);
-            data->WriteGuidMask<3>(bgGuid);
-            data->WriteGuidMask<6>(playerGuid);
-            data->WriteGuidMask<5>(bgGuid);
-            data->WriteBit(bg->isRated());              // Unk Bit 64
-            data->WriteGuidMask<4>(playerGuid);
-            data->WriteGuidMask<6, 4, 2>(bgGuid);
-            data->WriteGuidMask<3, 0>(playerGuid);
+            data.WriteGuidMask<2, 7>(playerGuid);
+            data.WriteGuidMask<7, 1>(bgGuid);
+            data.WriteGuidMask<5>(playerGuid);
+            data.WriteBit(bg->GetPlayerTeam(playerGuid) == ALLIANCE);  // Bg faction bit
+            data.WriteGuidMask<0>(bgGuid);
+            data.WriteGuidMask<1>(playerGuid);
+            data.WriteGuidMask<3>(bgGuid);
+            data.WriteGuidMask<6>(playerGuid);
+            data.WriteGuidMask<5>(bgGuid);
+            data.WriteBit(bg->isRated());              // Unk Bit 64
+            data.WriteGuidMask<4>(playerGuid);
+            data.WriteGuidMask<6, 4, 2>(bgGuid);
+            data.WriteGuidMask<3, 0>(playerGuid);
 
-            data->WriteGuidBytes<4, 5>(bgGuid);
-            data->WriteGuidBytes<5>(playerGuid);
-            data->WriteGuidBytes<1, 6, 3, 7>(bgGuid);
-            data->WriteGuidBytes<6>(playerGuid);
+            data.WriteGuidBytes<4, 5>(bgGuid);
+            data.WriteGuidBytes<5>(playerGuid);
+            data.WriteGuidBytes<1, 6, 3, 7>(bgGuid);
+            data.WriteGuidBytes<6>(playerGuid);
 
-            *data << uint32(0);                         // Time
-            *data << uint8(0);                          // unk
+            data << uint32(0);                         // Time
+            data << uint8(0);                          // unk
 
-            data->WriteGuidBytes<4, 1>(playerGuid);
+            data.WriteGuidBytes<4, 1>(playerGuid);
 
-            *data << uint32(QueueSlot);                 // Queue slot
+            data << uint32(QueueSlot);                 // Queue slot
             //if (...)
             //    *data << uint8(playerCount);          // player count (XvX) > 0 && rated: Rated XvX, !rated: Skirmish XvX. if ==0 >= Bg type
             //else
-                *data << uint8(arenatype);
+            data << uint8(arenatype);
 
-            *data << uint32(QueueSlot);                 // not queue slot
-            *data << uint32(bg->GetMapId());            // Map Id
-            *data << uint8(0);                          // Max Level? seen 85
-            *data << uint32(Time2);                     // Time since started
+            data << uint32(QueueSlot);                 // not queue slot
+            data << uint32(bg->GetMapId());            // Map Id
+            data << uint8(0);                          // Max Level? seen 85
+            data << uint32(Time2);                     // Time since started
 
-            data->WriteGuidBytes<2>(playerGuid);
+            data.WriteGuidBytes<2>(playerGuid);
 
-            *data << uint32(Time1);                     // Time until closed
+            data << uint32(Time1);                     // Time until closed
 
-            data->WriteGuidBytes<0, 3>(playerGuid);
-            data->WriteGuidBytes<2>(bgGuid);
+            data.WriteGuidBytes<0, 3>(playerGuid);
+            data.WriteGuidBytes<2>(bgGuid);
 
-            *data << uint32(bg->GetClientInstanceID()); // Client Instance ID
+            data << uint32(bg->GetClientInstanceID()); // Client Instance ID
 
-            data->WriteGuidBytes<0>(bgGuid);
-            data->WriteGuidBytes<7>(playerGuid);
+            data.WriteGuidBytes<0>(bgGuid);
+            data.WriteGuidBytes<7>(playerGuid);
             break;
         }
         case STATUS_WAIT_LEAVE:
         {
             // not used currently and not checked
-            data->Initialize(SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS, 48);
+            data.Initialize(SMSG_BATTLEFIELD_STATUS_WAITFORGROUPS, 48);
 
-            *data << uint8(0);                          // unk
-            *data << uint32(QueueSlot);                 // not queueSlot
-            *data << uint32(QueueSlot);                 // Queue slot
-            *data << uint32(bg->GetEndTime());          // Time until closed
-            *data << uint32(0);                         // unk
-            *data << uint8(0);                          // unk
-            *data << uint8(0);                          // unk
-            *data << uint8(bg->GetMinLevel());          // Min Level
-            *data << uint8(0);                          // unk
-            *data << uint8(0);                          // unk
-            *data << uint32(bg->GetMapId());            // Map Id
-            *data << uint32(0);                         // Time
-            *data << uint8(0);                          // unk
+            data << uint8(0);                          // unk
+            data << uint32(QueueSlot);                 // not queueSlot
+            data << uint32(QueueSlot);                 // Queue slot
+            data << uint32(bg->GetEndTime());          // Time until closed
+            data << uint32(0);                         // unk
+            data << uint8(0);                          // unk
+            data << uint8(0);                          // unk
+            data << uint8(bg->GetMinLevel());          // Min Level
+            data << uint8(0);                          // unk
+            data << uint8(0);                          // unk
+            data << uint32(bg->GetMapId());            // Map Id
+            data << uint32(0);                         // Time
+            data << uint8(0);                          // unk
 
-            data->WriteGuidMask<0, 1, 7>(bgGuid);
-            data->WriteGuidMask<7, 0>(playerGuid);
-            data->WriteGuidMask<4>(bgGuid);
-            data->WriteGuidMask<6, 2, 3>(playerGuid);
-            data->WriteGuidMask<3>(bgGuid);
-            data->WriteGuidMask<4>(playerGuid);
-            data->WriteGuidMask<5>(bgGuid);
-            data->WriteGuidMask<5>(playerGuid);
-            data->WriteGuidMask<2>(bgGuid);
-            data->WriteBit(bg->isRated());              // Is Rated
-            data->WriteGuidMask<1>(playerGuid);
-            data->WriteGuidMask<6>(bgGuid);
+            data.WriteGuidMask<0, 1, 7>(bgGuid);
+            data.WriteGuidMask<7, 0>(playerGuid);
+            data.WriteGuidMask<4>(bgGuid);
+            data.WriteGuidMask<6, 2, 3>(playerGuid);
+            data.WriteGuidMask<3>(bgGuid);
+            data.WriteGuidMask<4>(playerGuid);
+            data.WriteGuidMask<5>(bgGuid);
+            data.WriteGuidMask<5>(playerGuid);
+            data.WriteGuidMask<2>(bgGuid);
+            data.WriteBit(bg->isRated());              // Is Rated
+            data.WriteGuidMask<1>(playerGuid);
+            data.WriteGuidMask<6>(bgGuid);
 
-            data->WriteGuidBytes<0>(playerGuid);
-            data->WriteGuidBytes<4>(bgGuid);
-            data->WriteGuidBytes<3>(playerGuid);
-            data->WriteGuidBytes<1, 0, 2>(bgGuid);
-            data->WriteGuidBytes<2>(playerGuid);
-            data->WriteGuidBytes<7>(bgGuid);
-            data->WriteGuidBytes<1, 6>(playerGuid);
-            data->WriteGuidBytes<6, 5>(bgGuid);
-            data->WriteGuidBytes<5, 4, 7>(playerGuid);
-            data->WriteGuidBytes<3>(bgGuid);
+            data.WriteGuidBytes<0>(playerGuid);
+            data.WriteGuidBytes<4>(bgGuid);
+            data.WriteGuidBytes<3>(playerGuid);
+            data.WriteGuidBytes<1, 0, 2>(bgGuid);
+            data.WriteGuidBytes<2>(playerGuid);
+            data.WriteGuidBytes<7>(bgGuid);
+            data.WriteGuidBytes<1, 6>(playerGuid);
+            data.WriteGuidBytes<6, 5>(bgGuid);
+            data.WriteGuidBytes<5, 4, 7>(playerGuid);
+            data.WriteGuidBytes<3>(bgGuid);
             break;
         }
         default:
@@ -1421,14 +1421,14 @@ void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket* data, BattleGro
     }
 }
 
-void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket* data, BattleGround* bg)
+void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket& data, BattleGround* bg)
 {
     ByteBuffer buffer;
 
     // last check on 4.3.4
-    data->Initialize(SMSG_PVP_LOG_DATA, (1 + 1 + 4 + 40 * bg->GetPlayerScoresSize()));
-    data->WriteBit(bg->isArena());
-    data->WriteBit(bg->isRated());
+    data.Initialize(SMSG_PVP_LOG_DATA, (1 + 1 + 4 + 40 * bg->GetPlayerScoresSize()));
+    data.WriteBit(bg->isArena());
+    data.WriteBit(bg->isRated());
 
     if (bg->isArena())
     {
@@ -1436,32 +1436,32 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket* data, BattleGround* bg)
         for (int8 i = 0; i < PVP_TEAM_COUNT; ++i)
         {
             if (ArenaTeam* at = sObjectMgr.GetArenaTeamById(bg->m_ArenaTeamIds[i]))
-                data->WriteBits(at->GetName().length(), 8);
+                data.WriteBits(at->GetName().length(), 8);
             else
-                data->WriteBits(0, 8);
+                data.WriteBits(0, 8);
         }
     }
 
-    data->WriteBits(bg->GetPlayerScoresSize(), 21);
+    data.WriteBits(bg->GetPlayerScoresSize(), 21);
     for (BattleGround::BattleGroundScoreMap::const_iterator itr = bg->GetPlayerScoresBegin(); itr != bg->GetPlayerScoresEnd(); ++itr)
     {
         ObjectGuid memberGuid = itr->first;
         Player* player = sObjectMgr.GetPlayer(itr->first);
         const BattleGroundScore* score = itr->second;
 
-        data->WriteBit(0);                  // unk1
-        data->WriteBit(0);                  // unk2
-        data->WriteGuidMask<2>(memberGuid);
-        data->WriteBit(!bg->isArena());
-        data->WriteBit(0);                  // unk4
-        data->WriteBit(0);                  // unk5
-        data->WriteBit(0);                  // unk6
-        data->WriteGuidMask<3, 0, 5, 1, 6>(memberGuid);
+        data.WriteBit(0);                  // unk1
+        data.WriteBit(0);                  // unk2
+        data.WriteGuidMask<2>(memberGuid);
+        data.WriteBit(!bg->isArena());
+        data.WriteBit(0);                  // unk4
+        data.WriteBit(0);                  // unk5
+        data.WriteBit(0);                  // unk6
+        data.WriteGuidMask<3, 0, 5, 1, 6>(memberGuid);
         Team team = bg->GetPlayerTeam(itr->first);
         if (!team && player)
             team = player->GetTeam();
-        data->WriteBit(team == ALLIANCE);   // unk7
-        data->WriteGuidMask<7>(memberGuid);
+        data.WriteBit(team == ALLIANCE);   // unk7
+        data.WriteGuidMask<7>(memberGuid);
 
         buffer << uint32(score->HealingDone);         // healing done
         buffer << uint32(score->DamageDone);          // damage done
@@ -1489,7 +1489,7 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket* data, BattleGround* bg)
         switch (bg->GetTypeID())                            // battleground specific things
         {
             case BATTLEGROUND_AV:
-                data->WriteBits(5, 24);                     // count of next fields
+                data.WriteBits(5, 24);                     // count of next fields
                 buffer << uint32(((BattleGroundAVScore*)score)->GraveyardsAssaulted); // GraveyardsAssaulted
                 buffer << uint32(((BattleGroundAVScore*)score)->GraveyardsDefended);  // GraveyardsDefended
                 buffer << uint32(((BattleGroundAVScore*)score)->TowersAssaulted);     // TowersAssaulted
@@ -1497,17 +1497,17 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket* data, BattleGround* bg)
                 buffer << uint32(((BattleGroundAVScore*)score)->SecondaryObjectives); // SecondaryObjectives - free some of the Lieutnants
                 break;
             case BATTLEGROUND_WS:
-                data->WriteBits(2, 24);                     // count of next fields
+                data.WriteBits(2, 24);                     // count of next fields
                 buffer << uint32(((BattleGroundWGScore*)score)->FlagCaptures);        // flag captures
                 buffer << uint32(((BattleGroundWGScore*)score)->FlagReturns);         // flag returns
                 break;
             case BATTLEGROUND_AB:
-                data->WriteBits(2, 24);                     // count of next fields
+                data.WriteBits(2, 24);                     // count of next fields
                 buffer << uint32(((BattleGroundABScore*)score)->BasesAssaulted);      // bases asssulted
                 buffer << uint32(((BattleGroundABScore*)score)->BasesDefended);       // bases defended
                 break;
             case BATTLEGROUND_EY:
-                data->WriteBits(1, 24);                     // count of next fields
+                data.WriteBits(1, 24);                     // count of next fields
                 buffer << uint32(((BattleGroundEYScore*)score)->FlagCaptures);        // flag captures
                 break;
             case BATTLEGROUND_NA:
@@ -1519,22 +1519,22 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket* data, BattleGround* bg)
             case BATTLEGROUND_RV:                           // wotlk
             case BATTLEGROUND_IC:                           // wotlk
             case BATTLEGROUND_RB:                           // wotlk
-                data->WriteBits(0, 24);                     // count of next fields
+                data.WriteBits(0, 24);                     // count of next fields
                 break;
              default:
                 sLog.outError("Unhandled SMSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
-                data->WriteBits(0, 24);                     // count of next fields
+                data.WriteBits(0, 24);                     // count of next fields
                 break;
         }
 
-        data->WriteGuidMask<4>(memberGuid);
+        data.WriteGuidMask<4>(memberGuid);
 
         buffer.WriteGuidBytes<0, 3>(memberGuid);
         // if (unk4) << uint32() unk
         buffer.WriteGuidBytes<7, 2>(memberGuid);
     }
 
-    data->WriteBit(bg->GetStatus() == STATUS_WAIT_LEAVE);   // If Ended
+    data.WriteBit(bg->GetStatus() == STATUS_WAIT_LEAVE);   // If Ended
 
     if (bg->isRated())                                      // arena
     {
@@ -1543,34 +1543,34 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket* data, BattleGround* bg)
             uint32 pointsLost = bg->m_ArenaTeamRatingChanges[i] < 0 ? abs(bg->m_ArenaTeamRatingChanges[i]) : 0;
             uint32 pointsGained = bg->m_ArenaTeamRatingChanges[i] > 0 ? bg->m_ArenaTeamRatingChanges[i] : 0;
 
-            *data << uint32(0);                             // Matchmaking Value
-            *data << uint32(pointsLost);                    // Rating Lost
-            *data << uint32(pointsGained);                  // Rating gained
+            data << uint32(0);                             // Matchmaking Value
+            data << uint32(pointsLost);                    // Rating Lost
+            data << uint32(pointsGained);                  // Rating gained
             DEBUG_LOG("rating change: %d", bg->m_ArenaTeamRatingChanges[i]);
         }
     }
 
-    data->FlushBits();
-    data->append(buffer);
+    data.FlushBits();
+    data.append(buffer);
 
     if (bg->isArena())
     {
         for (int8 i = 0; i < PVP_TEAM_COUNT; ++i)
         {
             if (ArenaTeam* at = sObjectMgr.GetArenaTeamById(bg->m_ArenaTeamIds[i]))
-                data->append(at->GetName().data(), at->GetName().length());
+                data.append(at->GetName().data(), at->GetName().length());
         }
     }
 
-    *data << uint8(bg->GetPlayersCountByTeam(HORDE));
+    data << uint8(bg->GetPlayersCountByTeam(HORDE));
 
     if (bg->GetStatus() == STATUS_WAIT_LEAVE)
-        *data << uint8(bg->GetWinner() == ALLIANCE);        // who win
+        data << uint8(bg->GetWinner() == ALLIANCE);        // who win
 
-    *data << uint8(bg->GetPlayersCountByTeam(ALLIANCE));
+    data << uint8(bg->GetPlayersCountByTeam(ALLIANCE));
 }
 
-void BattleGroundMgr::BuildBattleGroundStatusFailedPacket(WorldPacket* data, BattleGround* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result)
+void BattleGroundMgr::BuildBattleGroundStatusFailedPacket(WorldPacket& data, BattleGround* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result)
 {
     ObjectGuid bgGuid = bg->GetObjectGuid();
     ObjectGuid unkGuid2 = ObjectGuid();
@@ -1579,83 +1579,83 @@ void BattleGroundMgr::BuildBattleGroundStatusFailedPacket(WorldPacket* data, Bat
     DEBUG_LOG("BattleGroundMgr::BuildBattleGroundStatusFailedPacket slot %u result %u bgstatus %u player %s bg %s",
         QueueSlot, result, bg->GetStatus(), playerGuid.GetString().c_str(), bgGuid.GetString().c_str());
 
-    data->Initialize(SMSG_BATTLEFIELD_STATUS_FAILED);
+    data.Initialize(SMSG_BATTLEFIELD_STATUS_FAILED);
 
-    data->WriteGuidMask<3>(bgGuid);
-    data->WriteGuidMask<3>(playerGuid);
-    data->WriteGuidMask<3>(unkGuid2);
-    data->WriteGuidMask<0>(playerGuid);
-    data->WriteGuidMask<6>(bgGuid);
-    data->WriteGuidMask<5, 6, 4, 2>(unkGuid2);
+    data.WriteGuidMask<3>(bgGuid);
+    data.WriteGuidMask<3>(playerGuid);
+    data.WriteGuidMask<3>(unkGuid2);
+    data.WriteGuidMask<0>(playerGuid);
+    data.WriteGuidMask<6>(bgGuid);
+    data.WriteGuidMask<5, 6, 4, 2>(unkGuid2);
 
-    data->WriteGuidMask<1>(playerGuid);
-    data->WriteGuidMask<1>(bgGuid);
-    data->WriteGuidMask<5, 6>(playerGuid);
-    data->WriteGuidMask<1>(unkGuid2);
-    data->WriteGuidMask<7>(bgGuid);
-    data->WriteGuidMask<4>(playerGuid);
+    data.WriteGuidMask<1>(playerGuid);
+    data.WriteGuidMask<1>(bgGuid);
+    data.WriteGuidMask<5, 6>(playerGuid);
+    data.WriteGuidMask<1>(unkGuid2);
+    data.WriteGuidMask<7>(bgGuid);
+    data.WriteGuidMask<4>(playerGuid);
 
-    data->WriteGuidMask<2, 5>(bgGuid);
-    data->WriteGuidMask<7>(playerGuid);
-    data->WriteGuidMask<4, 0>(bgGuid);
-    data->WriteGuidMask<0>(unkGuid2);
-    data->WriteGuidMask<2>(playerGuid);
-    data->WriteGuidMask<7>(unkGuid2);
+    data.WriteGuidMask<2, 5>(bgGuid);
+    data.WriteGuidMask<7>(playerGuid);
+    data.WriteGuidMask<4, 0>(bgGuid);
+    data.WriteGuidMask<0>(unkGuid2);
+    data.WriteGuidMask<2>(playerGuid);
+    data.WriteGuidMask<7>(unkGuid2);
 
-    data->WriteGuidBytes<1>(bgGuid);
+    data.WriteGuidBytes<1>(bgGuid);
 
-    *data << uint32(QueueSlot);         // not queue slot
-    *data << uint32(QueueSlot);         // Queue slot
+    data << uint32(QueueSlot);         // not queue slot
+    data << uint32(QueueSlot);         // Queue slot
 
-    data->WriteGuidBytes<6, 3, 7, 4>(unkGuid2);
-    data->WriteGuidBytes<0>(bgGuid);
-    data->WriteGuidBytes<5>(unkGuid2);
-    data->WriteGuidBytes<7, 6, 2>(bgGuid);
-    data->WriteGuidBytes<6, 3>(playerGuid);
-    data->WriteGuidBytes<1>(unkGuid2);
-    data->WriteGuidBytes<3>(bgGuid);
-    data->WriteGuidBytes<0, 1, 4>(playerGuid);
-    data->WriteGuidBytes<0>(unkGuid2);
-    data->WriteGuidBytes<5>(bgGuid);
-    data->WriteGuidBytes<7>(playerGuid);
-    data->WriteGuidBytes<4>(bgGuid);
-    data->WriteGuidBytes<2>(unkGuid2);
+    data.WriteGuidBytes<6, 3, 7, 4>(unkGuid2);
+    data.WriteGuidBytes<0>(bgGuid);
+    data.WriteGuidBytes<5>(unkGuid2);
+    data.WriteGuidBytes<7, 6, 2>(bgGuid);
+    data.WriteGuidBytes<6, 3>(playerGuid);
+    data.WriteGuidBytes<1>(unkGuid2);
+    data.WriteGuidBytes<3>(bgGuid);
+    data.WriteGuidBytes<0, 1, 4>(playerGuid);
+    data.WriteGuidBytes<0>(unkGuid2);
+    data.WriteGuidBytes<5>(bgGuid);
+    data.WriteGuidBytes<7>(playerGuid);
+    data.WriteGuidBytes<4>(bgGuid);
+    data.WriteGuidBytes<2>(unkGuid2);
 
-    *data << uint32(result);            // Result
+    data << uint32(result);            // Result
 
-    data->WriteGuidBytes<2>(playerGuid);
+    data.WriteGuidBytes<2>(playerGuid);
 
-    *data << uint32(0);                 // unk Time
+    data << uint32(0);                 // unk Time
 
-    data->WriteGuidBytes<5>(playerGuid);
+    data.WriteGuidBytes<5>(playerGuid);
 }
 
-void BattleGroundMgr::BuildUpdateWorldStatePacket(WorldPacket* data, uint32 field, uint32 value)
+void BattleGroundMgr::BuildUpdateWorldStatePacket(WorldPacket& data, uint32 field, uint32 value)
 {
-    data->Initialize(SMSG_UPDATE_WORLD_STATE, 4 + 4);
-    *data << uint32(field);
-    *data << uint32(value);
-    *data << uint8(0);
+    data.Initialize(SMSG_UPDATE_WORLD_STATE, 4 + 4);
+    data << uint32(field);
+    data << uint32(value);
+    data << uint8(0);
 }
 
-void BattleGroundMgr::BuildPlaySoundPacket(WorldPacket* data, uint32 soundid)
+void BattleGroundMgr::BuildPlaySoundPacket(WorldPacket& data, uint32 soundid)
 {
-    data->Initialize(SMSG_PLAY_SOUND, 4);
-    *data << uint32(soundid);
+    data.Initialize(SMSG_PLAY_SOUND, 4);
+    data << uint32(soundid);
 }
 
-void BattleGroundMgr::BuildPlayerLeftBattleGroundPacket(WorldPacket* data, ObjectGuid guid)
+void BattleGroundMgr::BuildPlayerLeftBattleGroundPacket(WorldPacket& data, ObjectGuid guid)
 {
-    data->Initialize(SMSG_BATTLEGROUND_PLAYER_LEFT, 8);
-    data->WriteGuidMask<7, 6, 2, 4, 5, 1, 3, 0>(guid);
-    data->WriteGuidBytes<4, 2, 5, 7, 0, 6, 1, 3>(guid);
+    data.Initialize(SMSG_BATTLEGROUND_PLAYER_LEFT, 8);
+    data.WriteGuidMask<7, 6, 2, 4, 5, 1, 3, 0>(guid);
+    data.WriteGuidBytes<4, 2, 5, 7, 0, 6, 1, 3>(guid);
 }
 
-void BattleGroundMgr::BuildPlayerJoinedBattleGroundPacket(WorldPacket* data, Player* plr)
+void BattleGroundMgr::BuildPlayerJoinedBattleGroundPacket(WorldPacket& data, Player* plr)
 {
-    data->Initialize(SMSG_BATTLEGROUND_PLAYER_JOINED, 8);
-    data->WriteGuidMask<0, 4, 3, 5, 7, 6, 2, 1>(plr->GetObjectGuid());
-    data->WriteGuidBytes<1, 5, 3, 2, 0, 7, 4, 6>(plr->GetObjectGuid());
+    data.Initialize(SMSG_BATTLEGROUND_PLAYER_JOINED, 8);
+    data.WriteGuidMask<0, 4, 3, 5, 7, 6, 2, 1>(plr->GetObjectGuid());
+    data.WriteGuidBytes<1, 5, 3, 2, 0, 7, 4, 6>(plr->GetObjectGuid());
 }
 
 BattleGround* BattleGroundMgr::GetBattleGroundThroughClientInstance(uint32 instanceId, BattleGroundTypeId bgTypeId)
@@ -1975,26 +1975,26 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
     sLog.outString();
 }
 
-void BattleGroundMgr::BuildBattleGroundListPacket(WorldPacket* data, ObjectGuid guid, Player* plr, BattleGroundTypeId bgTypeId)
+void BattleGroundMgr::BuildBattleGroundListPacket(WorldPacket& data, ObjectGuid guid, Player* plr, BattleGroundTypeId bgTypeId)
 {
     if (!plr)
         return;
 
     BattleGround* bgTemplate = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
 
-    data->Initialize(SMSG_BATTLEFIELD_LIST);
-    *data << uint32(0);                     // 4.3.4 winConquest weekend
-    *data << uint32(0);                     // 4.3.4 winConquest random
-    *data << uint32(0);                     // 4.3.4 lossHonor weekend
-    *data << uint32(bgTypeId);              // battleground id
-    *data << uint32(0);                     // 4.3.4 lossHonor random
-    *data << uint32(0);                     // 4.3.4 winHonor random
-    *data << uint32(0);                     // 4.3.4 winHonor weekend
-    *data << uint8(0);                      // max level
-    *data << uint8(0);                      // min level
-    data->WriteGuidMask<0, 1, 7>(guid);
-    data->WriteBit(false);                  // has holiday bg currency bonus ??
-    data->WriteBit(false);                  // has random bg currency bonus ??
+    data.Initialize(SMSG_BATTLEFIELD_LIST);
+    data << uint32(0);                     // 4.3.4 winConquest weekend
+    data << uint32(0);                     // 4.3.4 winConquest random
+    data << uint32(0);                     // 4.3.4 lossHonor weekend
+    data << uint32(bgTypeId);              // battleground id
+    data << uint32(0);                     // 4.3.4 lossHonor random
+    data << uint32(0);                     // 4.3.4 winHonor random
+    data << uint32(0);                     // 4.3.4 winHonor weekend
+    data << uint8(0);                      // max level
+    data << uint8(0);                      // min level
+    data.WriteGuidMask<0, 1, 7>(guid);
+    data.WriteBit(false);                  // has holiday bg currency bonus ??
+    data.WriteBit(false);                  // has random bg currency bonus ??
 
     uint32 count = 0;
     ByteBuffer buf;
@@ -2013,17 +2013,17 @@ void BattleGroundMgr::BuildBattleGroundListPacket(WorldPacket* data, ObjectGuid 
         }
     }
 
-    data->WriteBits(count, 24);
-    data->WriteGuidMask<6, 4, 2, 3>(guid);
-    data->WriteBit(true);                   // unk
-    data->WriteGuidMask<5>(guid);
-    data->WriteBit(true);                   // signals EVENT_PVPQUEUE_ANYWHERE_SHOW if set
+    data.WriteBits(count, 24);
+    data.WriteGuidMask<6, 4, 2, 3>(guid);
+    data.WriteBit(true);                   // unk
+    data.WriteGuidMask<5>(guid);
+    data.WriteBit(true);                   // signals EVENT_PVPQUEUE_ANYWHERE_SHOW if set
 
-    data->WriteGuidBytes<6, 1, 7, 5>(guid);
-    data->FlushBits();
+    data.WriteGuidBytes<6, 1, 7, 5>(guid);
+    data.FlushBits();
     if (count)
-        data->append(buf);
-    data->WriteGuidBytes<0, 2, 4, 3>(guid);
+        data.append(buf);
+    data.WriteGuidBytes<0, 2, 4, 3>(guid);
 }
 
 void BattleGroundMgr::SendToBattleGround(Player* pl, uint32 instanceId, BattleGroundTypeId bgTypeId)

@@ -144,7 +144,7 @@ bool ChatHandler::HandleNotifyCommand(char* args)
     data.WriteBits(str.length(), 13);
     data.FlushBits();
     data.append(str.c_str(), str.length());
-    sWorld.SendGlobalMessage(&data);
+    sWorld.SendGlobalMessage(data);
 
     return true;
 }
@@ -1542,7 +1542,7 @@ bool ChatHandler::HandleModifyMountCommand(char* args)
     data << uint32(0);
     data << float(speed);
     data.WriteGuidBytes<6, 0, 7, 2>(guid);
-    chr->SendMessageToSet(&data, true);
+    chr->SendMessageToSet(data, true);
 
     data.Initialize(SMSG_MOVE_SET_SWIM_SPEED, 8 + 4 + 4);
     data.WriteGuidMask<5, 4, 7, 3, 2, 0, 1, 6>(guid);
@@ -1551,7 +1551,7 @@ bool ChatHandler::HandleModifyMountCommand(char* args)
     data.WriteGuidBytes<6, 3, 5, 2>(guid);
     data << float(speed);
     data.WriteGuidBytes<1, 7, 4>(guid);
-    chr->SendMessageToSet(&data, true);
+    chr->SendMessageToSet(data, true);
 
     return true;
 }

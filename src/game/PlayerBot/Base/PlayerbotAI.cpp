@@ -4776,7 +4776,7 @@ void PlayerbotAI::PlaySound(uint32 soundid)
 {
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << soundid;
-    GetMaster()->GetSession()->SendPacket(&data);
+    GetMaster()->GetSession()->SendPacket(data);
 }
 
 // PlaySound data from SoundEntries.dbc
@@ -8024,9 +8024,9 @@ void PlayerbotAI::InspectUpdate()
 {
     WorldPacket packet(SMSG_INSPECT_RESULTS, 50);
     packet << m_bot->GetPackGUID();
-    m_bot->BuildPlayerTalentsInfoData(&packet);
-    m_bot->BuildEnchantmentsInfoData(&packet);
-    GetMaster()->GetSession()->SendPacket(&packet);
+    m_bot->BuildPlayerTalentsInfoData(packet);
+    m_bot->BuildEnchantmentsInfoData(packet);
+    GetMaster()->GetSession()->SendPacket(packet);
 }
 
 void PlayerbotAI::Repair(const uint32 itemid, Creature* rCreature)
@@ -11290,7 +11290,7 @@ void PlayerbotAI::_HandleCommandSkill(std::string &text, Player &fromPlayer)
                         WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);           // visual effect on trainer
                         data << ObjectGuid(fromPlayer.GetSelectionGuid());
                         data << uint32(0xB3);                                   // index from SpellVisualKit.dbc
-                        GetMaster()->GetSession()->SendPacket(&data);
+                        GetMaster()->GetSession()->SendPacket(data);
 
                         // ToDo: update this!
                         //data.Initialize(SMSG_PLAY_SPELL_IMPACT, 12);            // visual effect on player
@@ -11345,7 +11345,7 @@ void PlayerbotAI::_HandleCommandSkill(std::string &text, Player &fromPlayer)
                         WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);           // visual effect on trainer
                         data << ObjectGuid(fromPlayer.GetSelectionGuid());
                         data << uint32(0xB3);                                   // index from SpellVisualKit.dbc
-                        GetMaster()->GetSession()->SendPacket(&data);
+                        GetMaster()->GetSession()->SendPacket(data);
 
                         // ToDo: update this!
                         //data.Initialize(SMSG_PLAY_SPELL_IMPACT, 12);            // visual effect on player

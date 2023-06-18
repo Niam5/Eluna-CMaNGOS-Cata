@@ -191,14 +191,14 @@ void PlayerMenu::SendGossipMenu(uint32 TitleTextId, ObjectGuid objectGuid)
         data << title;                                      // max 0x200
     }
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_GOSSIP_MESSAGE from %s", objectGuid.GetString().c_str());
 }
 
 void PlayerMenu::CloseGossip()
 {
     WorldPacket data(SMSG_GOSSIP_COMPLETE, 0);
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
 
     // DEBUG_LOG("WORLD: Sent SMSG_GOSSIP_COMPLETE");
 }
@@ -214,7 +214,7 @@ void PlayerMenu::SendPointOfInterest(float X, float Y, uint32 Icon, uint32 Flags
     data << uint32(Data);
     data << locName;
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     // DEBUG_LOG("WORLD: Sent SMSG_GOSSIP_POI");
 }
 
@@ -243,7 +243,7 @@ void PlayerMenu::SendPointOfInterest(uint32 poi_id)
     data << uint32(poi->data);
     data << icon_name;
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     // DEBUG_LOG("WORLD: Sent SMSG_GOSSIP_POI");
 }
 
@@ -306,7 +306,7 @@ void PlayerMenu::SendTalking(uint32 textID)
             }
         }
     }
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent SMSG_NPC_TEXT_UPDATE ");
 }
@@ -329,7 +329,7 @@ void PlayerMenu::SendTalking(char const* title, char const* text)
         data << uint32(0);
     }
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent SMSG_NPC_TEXT_UPDATE ");
 }
@@ -409,7 +409,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
         }
     }
     data.put<uint8>(count_pos, count);
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC Guid = %s", npcGUID.GetString().c_str());
 }
 
@@ -419,7 +419,7 @@ void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, ObjectGuid npcGUID)
     data << npcGUID;
     data << uint32(questStatus);
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_QUESTGIVER_STATUS for %s", npcGUID.GetString().c_str());
 }
 
@@ -559,7 +559,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* pQuest, ObjectGuid guid
         data << uint32(pQuest->DetailsEmoteDelay[i]);       // DetailsEmoteDelay (in ms)
     }
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent SMSG_QUESTGIVER_QUEST_DETAILS - for %s of %s, questid = %u", GetMenuSession()->GetPlayer()->GetGuidStr().c_str(), guid.GetString().c_str(), pQuest->GetQuestId());
 }
@@ -756,7 +756,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* pQuest)
     data << uint32(pQuest->GetSoundAcceptId());
     data << uint32(pQuest->GetSoundTurnInId());
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u", pQuest->GetQuestId());
 }
 
@@ -882,7 +882,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* pQuest, ObjectGuid npcGU
     data << uint32(pQuest->GetRewSkill());
     data << uint32(pQuest->GetRewSkillValue());
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_QUESTGIVER_OFFER_REWARD NPCGuid = %s, questid = %u", npcGUID.GetString().c_str(), pQuest->GetQuestId());
 }
 
@@ -973,6 +973,6 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* pQuest, ObjectGuid npcG
     data << uint32(0x10);                                   // flags4
     data << uint32(0x40);                                   // flags5
 
-    GetMenuSession()->SendPacket(&data);
+    GetMenuSession()->SendPacket(data);
     DEBUG_LOG("WORLD: Sent SMSG_QUESTGIVER_REQUEST_ITEMS NPCGuid = %s, questid = %u", npcGUID.GetString().c_str(), pQuest->GetQuestId());
 }

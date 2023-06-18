@@ -378,8 +378,8 @@ class Guild
         void BroadcastAddonToGuild(WorldSession* session, const std::string& msg, const std::string& prefix);
         void BroadcastToOfficers(WorldSession* session, const std::string& msg, uint32 language = LANG_UNIVERSAL);
         void BroadcastAddonToOfficers(WorldSession* session, const std::string& msg, const std::string& prefix);
-        void BroadcastPacketToRank(WorldPacket* packet, uint32 rankId);
-        void BroadcastPacket(WorldPacket* packet);
+        void BroadcastPacketToRank(WorldPacket const& packet, uint32 rankId);
+        void BroadcastPacket(WorldPacket const& packet);
         // for calendar
         void MassInviteToEvent(WorldSession* session, uint32 minLevel, uint32 maxLevel, uint32 minRank);
 

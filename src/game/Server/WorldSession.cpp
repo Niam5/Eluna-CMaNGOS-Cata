@@ -130,32 +130,21 @@ char const* WorldSession::GetPlayerName() const
 }
 
 /// Send a packet to the client
-void WorldSession::SendPacket(WorldPacket const* packet)
+void WorldSession::SendPacket(WorldPacket const& packet) const
 {
 #ifdef BUILD_PLAYERBOT
     // Send packet to bot AI
     if (GetPlayer())
     {
         if (GetPlayer()->GetPlayerbotAI())
-            GetPlayer()->GetPlayerbotAI()->HandleBotOutgoingPacket(*packet);
+            GetPlayer()->GetPlayerbotAI()->HandleBotOutgoingPacket(packet);
         else if (GetPlayer()->GetPlayerbotMgr())
-            GetPlayer()->GetPlayerbotMgr()->HandleMasterOutgoingPacket(*packet);
+            GetPlayer()->GetPlayerbotMgr()->HandleMasterOutgoingPacket(packet);
     }
-
-    if (!m_Socket)
-        return;
 #endif
 
-    if (m_Socket->IsClosed())
+    if (!m_Socket || m_Socket->IsClosed())
         return;
-
-    if (opcodeTable[packet->GetOpcode()].status == STATUS_UNHANDLED)
-    {
-        sLog.outError("SESSION: tried to send an unhandled opcode 0x%.4X", packet->GetOpcode());
-        return;
-    }
-
-    const_cast<WorldPacket*>(packet)->FlushBits();
 
 #ifdef MANGOS_DEBUG
 
@@ -174,10 +163,10 @@ void WorldSession::SendPacket(WorldPacket const* packet)
     if ((cur_time - lastTime) < 60)
     {
         sendPacketCount += 1;
-        sendPacketBytes += packet->size();
+        sendPacketBytes += packet.size();
 
         sendLastPacketCount += 1;
-        sendLastPacketBytes += packet->size();
+        sendLastPacketBytes += packet.size();
     }
     else
     {
@@ -188,12 +177,12 @@ void WorldSession::SendPacket(WorldPacket const* packet)
 
         lastTime = cur_time;
         sendLastPacketCount = 1;
-        sendLastPacketBytes = packet->wpos();               // wpos is real written size
+        sendLastPacketBytes = packet.wpos();               // wpos is real written size
     }
 
 #endif                                                  // !MANGOS_DEBUG
 
-    m_Socket->SendPacket(*packet);
+    m_Socket->SendPacket(packet);
 }
 
 /// Add an incoming packet to the queue
@@ -213,7 +202,7 @@ void WorldSession::LogUnexpectedOpcode(WorldPacket const& packet, const char* re
 }
 
 /// Logging helper for unexpected opcodes
-void WorldSession::LogUnprocessedTail(WorldPacket &packet)
+void WorldSession::LogUnprocessedTail(WorldPacket packet)
 {
     sLog.outError("SESSION: opcode %s (0x%.4X) have unprocessed tail data (read stop at " SIZEFMTD " from " SIZEFMTD ")",
                   packet.GetOpcodeName(),
@@ -560,7 +549,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         ///- Send the 'logout complete' packet to the client
         WorldPacket data(SMSG_LOGOUT_COMPLETE, 0);
-        SendPacket(&data);
+        SendPacket(data);
 
         ///- Since each account can only have one online character at any given time, ensure all characters for active account are marked as offline
         // No SQL injection as AccountId is uint32
@@ -605,7 +594,7 @@ void WorldSession::SendAreaTriggerMessage(const char* Text, ...)
     WorldPacket data(SMSG_AREA_TRIGGER_MESSAGE, 4 + length);
     data << length;
     data << szStr;
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendNotification(const char* format, ...)
@@ -623,7 +612,7 @@ void WorldSession::SendNotification(const char* format, ...)
         data.WriteBits(strlen(szStr), 13);
         data.FlushBits();
         data.append(szStr, strlen(szStr));
-        SendPacket(&data);
+        SendPacket(data);
     }
 }
 
@@ -643,7 +632,7 @@ void WorldSession::SendNotification(int32 string_id, ...)
         data.WriteBits(strlen(szStr), 13);
         data.FlushBits();
         data.append(szStr, strlen(szStr));
-        SendPacket(&data);
+        SendPacket(data);
     }
 }
 
@@ -688,7 +677,7 @@ void WorldSession::SendSetPhaseShift(uint32 phaseMask, uint16 mapId)
         data << uint16(mapId);
 
     data.WriteGuidBytes<5>(guid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 const char* WorldSession::GetMangosString(int32 entry) const
@@ -732,7 +721,7 @@ void WorldSession::SendAuthWaitQue(uint32 position)
         packet.WriteBit(false);
         packet.WriteBit(false);
         packet << uint8( AUTH_OK );
-        SendPacket(&packet);
+        SendPacket(packet);
     }
     else
     {
@@ -742,7 +731,7 @@ void WorldSession::SendAuthWaitQue(uint32 position)
         packet.WriteBit(false);     // has account info
         packet << uint8(AUTH_WAIT_QUEUE);
         packet << uint32(position);
-        SendPacket(&packet);
+        SendPacket(packet);
     }
 }
 
@@ -842,7 +831,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
         if (mask & (1 << i))
             data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::LoadTutorialsData()
@@ -886,7 +875,7 @@ void WorldSession::SendTransferAborted(uint32 mapid, uint8 reason, uint8 arg)
             data << uint8(arg);
             break;
     }
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendTutorialsData()
@@ -894,7 +883,7 @@ void WorldSession::SendTutorialsData()
     WorldPacket data(SMSG_TUTORIAL_FLAGS, 4 * 8);
     for (uint32 i = 0; i < 8; ++i)
         data << m_Tutorials[i];
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SaveTutorialsData()
@@ -933,7 +922,7 @@ void WorldSession::SaveTutorialsData()
     m_tutorialState = TUTORIALDATA_UNCHANGED;
 }
 
-void WorldSession::ReadAddonsInfo(ByteBuffer &data)
+void WorldSession::ReadAddonsInfo(ByteBuffer data)
 {
     if (data.rpos() + 4 > data.size())
         return;
@@ -1054,7 +1043,7 @@ void WorldSession::SendAddonsInfo()
         uint32
     }*/
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SetPlayer(Player* plr)
@@ -1082,10 +1071,10 @@ void WorldSession::SendRedirectClient(std::string& ip, uint16 port)
     sha1.Finalize();
     pkt.append(sha1.GetDigest(), 20);                       // hmacsha1(ip+port) w/ sessionkey as seed
 
-    SendPacket(&pkt);
+    SendPacket(pkt);
 }
 
-void WorldSession::ExecuteOpcode(OpcodeHandler const& opHandle, WorldPacket &packet)
+void WorldSession::ExecuteOpcode(OpcodeHandler const& opHandle, WorldPacket& packet)
 {
 #ifdef BUILD_ELUNA
     if (Eluna* e = sWorld.GetEluna())

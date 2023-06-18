@@ -211,7 +211,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recv_data)
         result->NextRow();
     }
     delete result;
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandlePetitionQueryOpcode(WorldPacket& recv_data)
@@ -273,7 +273,7 @@ void WorldSession::SendPetitionQueryOpcode(ObjectGuid petitionguid)
     data << uint32(0);                                      // 14
     data << uint32(0);                                      // 15 0 - guild, 1 - arena team
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandlePetitionRenameOpcode(WorldPacket& recv_data)
@@ -320,7 +320,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket& recv_data)
     WorldPacket data(MSG_PETITION_RENAME, 8 + newname.size() + 1);
     data << petitionGuid;
     data << newname;
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandlePetitionSignOpcode(WorldPacket& recv_data)
@@ -453,7 +453,7 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket& recv_data)
     {
         WorldPacket data(MSG_PETITION_DECLINE, 8);
         data << _player->GetObjectGuid();
-        owner->GetSession()->SendPacket(&data);
+        owner->GetSession()->SendPacket(data);
     }
 }
 
@@ -525,7 +525,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket& recv_data)
     }
 
     delete result;
-    player->GetSession()->SendPacket(&data);
+    player->GetSession()->SendPacket(data);
 }
 
 void WorldSession::HandleTurnInPetitionOpcode(WorldPacket& recv_data)
@@ -681,6 +681,6 @@ void WorldSession::SendPetitionShowList(ObjectGuid guid)
     //    data << uint32(0);                        // unknown
     //    data << uint32(9);                        // required signs
     //}
-    SendPacket(&data);
+    SendPacket(data);
     DEBUG_LOG("Sent SMSG_PETITION_SHOWLIST");
 }

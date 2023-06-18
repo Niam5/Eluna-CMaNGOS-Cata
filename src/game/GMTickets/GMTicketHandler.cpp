@@ -43,7 +43,7 @@ void WorldSession::SendGMTicketGetTicket(uint32 status, GMTicket* ticket /*= nul
         data << uint8(0);                                   // average wait time string
         data << uint32(0);                                  // average wait time
     }
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendGMResponse(GMTicket* ticket)
@@ -57,7 +57,7 @@ void WorldSession::SendGMResponse(GMTicket* ticket)
     data << uint8(0);                                       // response text 2
     data << uint8(0);                                       // response text 3
     data << uint8(0);                                       // response text 4
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleGMTicketGetTicketOpcode(WorldPacket& /*recv_data*/)
@@ -93,7 +93,7 @@ void WorldSession::HandleGMTicketDeleteTicketOpcode(WorldPacket& /*recv_data*/)
 
     WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
     data << uint32(9);
-    SendPacket(&data);
+    SendPacket(data);
 
     SendGMTicketGetTicket(0x0A);
 }
@@ -119,7 +119,7 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket& recv_data)
     {
         WorldPacket data(SMSG_GMTICKET_CREATE, 4);
         data << uint32(1);                                  // 1 - You already have GM ticket
-        SendPacket(&data);
+        SendPacket(data);
         return;
     }
 
@@ -132,7 +132,7 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket& recv_data)
 
     WorldPacket data(SMSG_GMTICKET_CREATE, 4);
     data << uint32(2);                                      // 2 - nothing appears (3-error creating, 5-error updating)
-    SendPacket(&data);
+    SendPacket(data);
 
     // TODO: Guard player map
     HashMapHolder<Player>::MapType& m = sObjectAccessor.GetPlayers();
@@ -148,7 +148,7 @@ void WorldSession::HandleGMTicketSystemStatusOpcode(WorldPacket& /*recv_data*/)
     WorldPacket data(SMSG_GMTICKET_SYSTEMSTATUS, 4);
     data << uint32(1);                                      // we can also disable ticket system by sending 0 value
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleGMSurveySubmitOpcode(WorldPacket& recv_data)
@@ -192,5 +192,5 @@ void WorldSession::HandleGMResponseResolveOpcode(WorldPacket& recv_data)
 
     WorldPacket data(SMSG_GMTICKET_RESOLVE_RESPONSE, 1);
     data << uint8(0);                                       // ask to fill out gm survey = 1
-    SendPacket(&data);
+    SendPacket(data);
 }

@@ -415,7 +415,7 @@ void SpellLog::SendToSet()
 
     // put total effect counter in packet
     m_spellLogData.put<uint32>(m_spellLogDataEffectsCounterPos, m_spellLogDataEffectsCounter);
-    m_spell->GetCaster()->SendMessageToSet(&m_spellLogData, true);
+    m_spell->GetCaster()->SendMessageToSet(m_spellLogData, true);
 
     // make it ready for another log if need
     Initialize();
@@ -4258,7 +4258,7 @@ void Spell::SendCastResult(Player* caster, SpellEntry const* spellInfo, uint8 ca
         default:
             break;
     }
-    caster->GetSession()->SendPacket(&data);
+    caster->GetSession()->SendPacket(data);
 }
 
 void Spell::SendSpellStart()
@@ -4326,7 +4326,7 @@ void Spell::SendSpellStart()
     }
 
     if (castFlags & CAST_FLAG_AMMO)                         // projectile info
-        WriteAmmoToPacket(&data);
+        WriteAmmoToPacket(data);
 
     if (castFlags & CAST_FLAG_IMMUNITY)                     // cast immunity
     {
@@ -4356,7 +4356,7 @@ void Spell::SendSpellStart()
             data << m_caster->GetPackGUID();
     }
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 }
 
 void Spell::SendSpellGo()
@@ -4400,7 +4400,7 @@ void Spell::SendSpellGo()
     data << uint32(m_timer);
     data << uint32(WorldTimer::getMSTime());                // timestamp
 
-    WriteSpellGoTargets(&data);
+    WriteSpellGoTargets(data);
 
     data << m_targets;
 
@@ -4434,7 +4434,7 @@ void Spell::SendSpellGo()
     }
 
     if (castFlags & CAST_FLAG_AMMO)                         // projectile info
-        WriteAmmoToPacket(&data);
+        WriteAmmoToPacket(data);
 
     if (castFlags & CAST_FLAG_VISUAL_CHAIN)                 // spell visual chain effect
     {
@@ -4458,10 +4458,10 @@ void Spell::SendSpellGo()
         //}
     }
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 }
 
-void Spell::WriteAmmoToPacket(WorldPacket* data)
+void Spell::WriteAmmoToPacket(WorldPacket& data)
 {
     uint32 ammoInventoryType = 0;
     uint32 ammoDisplayID = 0;
@@ -4520,14 +4520,14 @@ void Spell::WriteAmmoToPacket(WorldPacket* data)
         }
     }
 
-    *data << uint32(ammoDisplayID);
-    *data << uint32(ammoInventoryType);
+    data << uint32(ammoDisplayID);
+    data << uint32(ammoInventoryType);
 }
 
-void Spell::WriteSpellGoTargets(WorldPacket* data)
+void Spell::WriteSpellGoTargets(WorldPacket& data)
 {
-    size_t count_pos = data->wpos();
-    *data << uint8(0);                                      // placeholder
+    size_t count_pos = data.wpos();
+    data << uint8(0);                                      // placeholder
 
     // This function also fill data for channeled spells:
     // m_needAliveTargetMask req for stop channeling if one target die
@@ -4545,7 +4545,7 @@ void Spell::WriteSpellGoTargets(WorldPacket* data)
         else if (ihit->missCondition == SPELL_MISS_NONE)    // Add only hits
         {
             ++hit;
-            *data << ihit->targetGUID;
+            data << ihit->targetGUID;
             m_needAliveTargetMask |= ihit->effectMask;
         }
         else
@@ -4557,19 +4557,19 @@ void Spell::WriteSpellGoTargets(WorldPacket* data)
     }
 
     for (GOTargetList::const_iterator ighit = m_UniqueGOTargetInfo.begin(); ighit != m_UniqueGOTargetInfo.end(); ++ighit)
-        *data << ighit->targetGUID;                         // Always hits
+        data << ighit->targetGUID;                         // Always hits
 
-    data->put<uint8>(count_pos, hit);
+    data.put<uint8>(count_pos, hit);
 
-    *data << (uint8)miss;
+    data << (uint8)miss;
     for (TargetList::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
     {
         if (ihit->missCondition != SPELL_MISS_NONE)         // Add only miss
         {
-            *data << ihit->targetGUID;
-            *data << uint8(ihit->missCondition);
+            data << ihit->targetGUID;
+            data << uint8(ihit->missCondition);
             if (ihit->missCondition == SPELL_MISS_REFLECT)
-                *data << uint8(ihit->reflectResult);
+                data << uint8(ihit->reflectResult);
         }
     }
     // Reset m_needAliveTargetMask for non channeled spell
@@ -4584,14 +4584,14 @@ void Spell::SendInterrupted(uint8 result)
     data << uint8(m_cast_count);
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 
     data.Initialize(SMSG_SPELL_FAILED_OTHER, (8 + 4));
     data << m_caster->GetPackGUID();
     data << uint8(m_cast_count);
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 }
 
 void Spell::SendChannelUpdate(uint32 time, bool properEnding)
@@ -4621,7 +4621,7 @@ void Spell::SendChannelUpdate(uint32 time, bool properEnding)
     WorldPacket data(SMSG_CHANNEL_UPDATE, 8 + 4);
     data << m_caster->GetPackGUID();
     data << uint32(time);
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 }
 
 void Spell::SendChannelStart(uint32 duration)
@@ -4676,7 +4676,7 @@ void Spell::SendChannelStart(uint32 duration)
     //        data << ObjectGuid().WriteAsPacked();
     //}
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 
     m_timer = duration;
 
@@ -4704,7 +4704,7 @@ void Spell::SendResurrectRequest(Player* target)
 
     data << uint32(m_spellInfo->Id);
 
-    target->GetSession()->SendPacket(&data);
+    target->GetSession()->SendPacket(data);
 }
 
 void Spell::SendPlaySpellVisual(uint32 SpellID)
@@ -4713,9 +4713,9 @@ void Spell::SendPlaySpellVisual(uint32 SpellID)
         return;
 
     WorldPacket data;
-    m_caster->BuildSendPlayVisualPacket(&data, SpellID, false);
+    m_caster->BuildSendPlayVisualPacket(data, SpellID, false);
 
-    ((Player*)m_caster)->GetSession()->SendPacket(&data);
+    ((Player*)m_caster)->GetSession()->SendPacket(data);
 }
 
 void Spell::TakeCastItem()
@@ -7580,7 +7580,7 @@ void Spell::Delayed()
     data << m_caster->GetPackGUID();
     data << uint32(delaytime);
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSet(data, true);
 }
 
 void Spell::DelayedChannel()

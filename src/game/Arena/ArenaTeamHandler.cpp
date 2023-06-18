@@ -207,7 +207,7 @@ void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket& recv_data)
     WorldPacket data(SMSG_ARENA_TEAM_INVITE, (8 + 10));
     data << GetPlayer()->GetName();
     data << arenateam->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->GetSession()->SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent SMSG_ARENA_TEAM_INVITE");
 }
@@ -400,7 +400,7 @@ void WorldSession::SendArenaTeamCommandResult(uint32 team_action, const std::str
     data << uint32(team_action);
     data << uint32(error_id);
     data.append(team.data(), team.length());
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendNotInArenaTeamPacket(uint8 type)
@@ -410,7 +410,7 @@ void WorldSession::SendNotInArenaTeamPacket(uint8 type)
     data << uint32(unk);                                    // unk(0)
     if (!unk)
         data << uint8(type);                                // team type (2=2v2,3=3v3,5=5v5), can be used for custom types...
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 /*

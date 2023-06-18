@@ -478,8 +478,8 @@ class Spell
 
         bool DoCreateItem(SpellEffectEntry const* effect, uint32 itemtype);
 
-        void WriteSpellGoTargets(WorldPacket* data);
-        void WriteAmmoToPacket(WorldPacket* data);
+        void WriteSpellGoTargets(WorldPacket& data);
+        void WriteAmmoToPacket(WorldPacket& data);
 
         template<typename T> WorldObject* FindCorpseUsing();
 

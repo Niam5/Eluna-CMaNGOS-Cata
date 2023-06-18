@@ -2461,13 +2461,13 @@ class Unit : public WorldObject
         bool HasWorgenForm() const;
 
         // Packet builders
-        void BuildForceMoveRootPacket(WorldPacket* data, bool apply, uint32 value);
-        void BuildMoveWaterWalkPacket(WorldPacket* data, bool apply, uint32 value);
-        void BuildSendPlayVisualPacket(WorldPacket* data, uint32 value, bool impact);
-        void BuildMoveSetCanFlyPacket(WorldPacket* data, bool apply, uint32 value);
-        void BuildMoveFeatherFallPacket(WorldPacket* data, bool apply, uint32 value);
-        void BuildMoveHoverPacket(WorldPacket* data, bool apply, uint32 value);
-        void BuildMoveLevitatePacket(WorldPacket* data, bool apply, uint32 value);
+        void BuildForceMoveRootPacket(WorldPacket& data, bool apply, uint32 value);
+        void BuildMoveWaterWalkPacket(WorldPacket& data, bool apply, uint32 value);
+        void BuildSendPlayVisualPacket(WorldPacket& data, uint32 value, bool impact);
+        void BuildMoveSetCanFlyPacket(WorldPacket& data, bool apply, uint32 value);
+        void BuildMoveFeatherFallPacket(WorldPacket& data, bool apply, uint32 value);
+        void BuildMoveHoverPacket(WorldPacket& data, bool apply, uint32 value);
+        void BuildMoveLevitatePacket(WorldPacket& data, bool apply, uint32 value);
 
         // Take possession of an unit (pet, creature, ...)
         bool TakePossessOf(Unit* possessed);

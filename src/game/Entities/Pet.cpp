@@ -1286,7 +1286,7 @@ void Pet::_LoadSpellCooldowns()
             data << GetObjectGuid();
             data << uint8(0x0);                                     // flags (0x1, 0x2)
             data.append(cdData);
-            static_cast<Player*>(GetOwner())->GetSession()->SendPacket(&data);
+            static_cast<Player*>(GetOwner())->GetSession()->SendPacket(data);
         }
     }
 }
@@ -1707,7 +1707,7 @@ bool Pet::learnSpell(uint32 spell_id)
         {
             WorldPacket data(SMSG_PET_LEARNED_SPELL, 4);
             data << uint32(spell_id);
-            ((Player*)owner)->GetSession()->SendPacket(&data);
+            ((Player*)owner)->GetSession()->SendPacket(data);
 
             ((Player*)owner)->PetSpellInitialize();
         }
@@ -1766,7 +1766,7 @@ bool Pet::unlearnSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
                 {
                     WorldPacket data(SMSG_PET_REMOVED_SPELL, 4);
                     data << uint32(spell_id);
-                    ((Player*)owner)->GetSession()->SendPacket(&data);
+                    ((Player*)owner)->GetSession()->SendPacket(data);
                 }
             }
         }
@@ -2300,7 +2300,7 @@ void Pet::SetModeFlags(PetModeFlags mode)
     WorldPacket data(SMSG_PET_MODE, 12);
     data << GetObjectGuid();
     data << uint32(m_petModeFlags);
-    ((Player*)owner)->GetSession()->SendPacket(&data);
+    ((Player*)owner)->GetSession()->SendPacket(data);
 }
 
 //Todo: Hack alert, remove this for a better solution when its possible

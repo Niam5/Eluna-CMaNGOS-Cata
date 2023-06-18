@@ -68,7 +68,7 @@ void WorldSession::SendTabardVendorActivate(ObjectGuid guid)
 {
     WorldPacket data(MSG_TABARDVENDOR_ACTIVATE, 8);
     data << ObjectGuid(guid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleBankerActivateOpcode(WorldPacket& recv_data)
@@ -89,14 +89,14 @@ void WorldSession::SendShowBank(ObjectGuid guid)
 {
     WorldPacket data(SMSG_SHOW_BANK, 8);
     data << ObjectGuid(guid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendShowMailBox(ObjectGuid guid)
 {
     WorldPacket data(SMSG_SHOW_MAILBOX, 8);
     data << ObjectGuid(guid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleTrainerListOpcode(WorldPacket& recv_data)
@@ -227,7 +227,7 @@ void WorldSession::SendTrainerList(ObjectGuid guid, const std::string& strTitle)
     data << strTitle;
 
     data.put<uint32>(count_pos, count);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recv_data)
@@ -291,7 +291,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recv_data)
         sendData << ObjectGuid(guid);
         sendData << uint32(spellId);
         sendData << uint32(trainState);
-        SendPacket(&sendData);
+        SendPacket(sendData);
     }
     else
     {
@@ -299,12 +299,12 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recv_data)
 
         // visual effect on trainer
         WorldPacket data;
-        unit->BuildSendPlayVisualPacket(&data, 0xB3, false);
-        SendPacket(&data);
+        unit->BuildSendPlayVisualPacket(data, 0xB3, false);
+        SendPacket(data);
 
         // visual effect on player
-        _player->BuildSendPlayVisualPacket(&data, 0x016A, true);
-        SendPacket(&data);
+        _player->BuildSendPlayVisualPacket(data, 0x016A, true);
+        SendPacket(data);
 
         // learn explicitly or cast explicitly
         // TODO - Are these spells really cast correctly this way?
@@ -316,7 +316,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recv_data)
         sendData << ObjectGuid(guid);
         sendData << uint32(spellId);                                // should be same as in packet from client
         sendData << uint32(trainState);
-        SendPacket(&sendData);
+        SendPacket(sendData);
     }
 }
 
@@ -527,7 +527,7 @@ void WorldSession::SendBindPoint(Creature* npc)
     data << npc->GetObjectGuid();
     data << uint32(3286);                                   // Bind
     data << uint32(2);
-    SendPacket(&data);
+    SendPacket(data);
 
     _player->PlayerTalkClass->CloseGossip();
 }
@@ -602,14 +602,14 @@ void WorldSession::SendStablePet(ObjectGuid guid)
     }
 
     data.put<uint8>(wpos, num);                             // set real data to placeholder
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::SendStableResult(uint8 res)
 {
     WorldPacket data(SMSG_STABLE_RESULT, 1);
     data << uint8(res);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 bool WorldSession::CheckStableMaster(ObjectGuid guid)
