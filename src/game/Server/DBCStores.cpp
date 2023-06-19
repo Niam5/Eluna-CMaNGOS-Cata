@@ -75,6 +75,7 @@ uint32 sChrClassXPowerTypesStore[MAX_CLASSES][MAX_POWERS];
 // pair<class,powerIndex> => power
 uint32 sChrClassXPowerIndexStore[MAX_CLASSES][MAX_STORED_POWERS];
 DBCStorage <ChrRacesEntry> sChrRacesStore(ChrRacesEntryfmt);
+DBCStorage <CinematicCameraEntry> sCinematicCameraStore(CinematicCameraEntryfmt);
 DBCStorage <CinematicSequencesEntry> sCinematicSequencesStore(CinematicSequencesEntryfmt);
 DBCStorage <CreatureDisplayInfoEntry> sCreatureDisplayInfoStore(CreatureDisplayInfofmt);
 DBCStorage <CreatureDisplayInfoExtraEntry> sCreatureDisplayInfoExtraStore(CreatureDisplayInfoExtrafmt);
@@ -484,6 +485,7 @@ void LoadDBCStores(const std::string& dataPath)
         sChrClassXPowerIndexStore[entry->classId][index] = entry->power;
     }
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sChrRacesStore,            dbcPath,"ChrRaces.dbc");
+    LoadDBC(availableDbcLocales,bar,bad_dbc_files,sCinematicCameraStore,     dbcPath,"CinematicCamera.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sCinematicSequencesStore,  dbcPath,"CinematicSequences.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sCreatureDisplayInfoStore, dbcPath,"CreatureDisplayInfo.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sCreatureDisplayInfoExtraStore,dbcPath,"CreatureDisplayInfoExtra.dbc");

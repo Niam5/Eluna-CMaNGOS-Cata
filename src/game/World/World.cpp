@@ -977,6 +977,9 @@ void World::SetInitialWorldSettings()
     DetectDBCLang();
     sObjectMgr.SetDBCLocaleIndex(GetDefaultDbcLocale());    // Get once for all the locale index of DBC language (console/broadcasts)
 
+    sLog.outString("Loading Cinematics...");
+    LoadM2Cameras(m_dataPath);
+
     sLog.outString("Loading Script Names...");
     sScriptDevAIMgr.LoadScriptNames();
 

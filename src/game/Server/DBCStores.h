@@ -120,6 +120,7 @@ extern DBCStorage <ChrPowerTypesEntry>           sChrPowerTypesStore;
 extern uint32 sChrClassXPowerTypesStore[MAX_CLASSES][MAX_POWERS];
 extern uint32 sChrClassXPowerIndexStore[MAX_CLASSES][MAX_STORED_POWERS];
 extern DBCStorage <ChrRacesEntry>                sChrRacesStore;
+extern DBCStorage <CinematicCameraEntry>         sCinematicCameraStore;
 extern DBCStorage <CinematicSequencesEntry>      sCinematicSequencesStore;
 extern DBCStorage <CreatureDisplayInfoEntry>     sCreatureDisplayInfoStore;
 extern DBCStorage <CreatureDisplayInfoExtraEntry>sCreatureDisplayInfoExtraStore;

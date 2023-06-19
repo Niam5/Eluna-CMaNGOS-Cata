@@ -39,6 +39,7 @@
 #include "Chat/Chat.h"
 #include "Server/SQLStorages.h"
 #include "Server/DBCStores.h"
+#include "Cinematics/CinematicMgr.h"
 
 #include<vector>
 
@@ -1040,6 +1041,7 @@ class TradeData
 class Player : public Unit
 {
         friend class WorldSession;
+        friend class CinematicMgr;
         friend void Item::AddToUpdateQueueOf(Player* player);
         friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
@@ -1188,6 +1190,8 @@ class Player : public Unit
         void Yell(const std::string& text, const uint32 language);
         void TextEmote(const std::string& text);
         void Whisper(const std::string& text, const uint32 language, ObjectGuid receiver);
+
+        CinematicMgr* GetCinematicMgr() const { return _cinematicMgr; }
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
@@ -2740,6 +2744,8 @@ class Player : public Unit
         }
 
         void _fillGearScoreData(Item* item, GearScoreVec* gearScore, uint32& twoHandScore);
+
+        CinematicMgr* _cinematicMgr;
 
         Unit* m_mover;
         Camera m_camera;

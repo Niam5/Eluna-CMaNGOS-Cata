@@ -2,15 +2,14 @@
 
 #include <stdio.h>
 #include <deque>
-#include <map>
 #include <set>
 #include <cstdlib>
+#include <string.h>
+#include <vector>
 
 #ifdef _WIN32
 #include "direct.h"
-#include <windows.h>
 #else
-#include <dirent.h>
 #include <sys/stat.h>
 #endif
 
@@ -60,11 +59,12 @@ uint32 CONF_max_build = 0;
 enum Extract
 {
     EXTRACT_MAP = 1,
-    EXTRACT_DBC = 2
+    EXTRACT_DBC = 2,
+    EXTRACT_CAMERA = 4
 };
 
 // Select data for extract
-int   CONF_extract = EXTRACT_MAP | EXTRACT_DBC;
+int   CONF_extract = EXTRACT_MAP | EXTRACT_DBC | EXTRACT_CAMERA;
 // This option allow limit minimum height to some value (Allow save some memory)
 // see contrib/mmap/src/Tilebuilder.h, INVALID_MAP_LIQ_HEIGHT
 bool  CONF_allow_height_limit = true;
@@ -108,13 +108,12 @@ bool FileExists(const char* FileName)
 void Usage(char* prg)
 {
     printf(
-        "Usage:\n"
-        "%s -[var] [value]\n"
-        "-i set input path\n"
-        "-o set output path\n"
-        "-e extract only MAP(1)/DBC(2) - standard: both(3)\n"
-        "-e extract only MAP(1)/DBC(2) - temporary only: DBC(2)\n"
-        "-f height stored as int (less map size but lost some accuracy) 1 by default\n"
+        "Usage:\n"\
+        "%s -[var] [value]\n"\
+        "-i set input path\n"\
+        "-o set output path\n"\
+        "-e extract only MAP(1)/DBC(2)/Camera(4) - standard: all(7)\n"\
+        "-f height stored as int (less map size but lost some accuracy) 1 by default\n"\
         "-b extract data for specific build (at least not greater it from available). Min supported build %u.\n"
         "Example: %s -f 0 -i \"c:\\games\\game\"", prg, MIN_SUPPORTED_BUILD, prg);
     exit(1);
@@ -156,7 +155,7 @@ void HandleArgs(int argc, char* arg[])
                 if (c + 1 < argc)                           // all ok
                 {
                     CONF_extract = atoi(arg[(c++) + 1]);
-                    if (!(CONF_extract > 0 && CONF_extract < 4))
+                    if (!(CONF_extract > 0 && CONF_extract < 8))
                         Usage(arg[0]);
                 }
                 else
@@ -1154,6 +1153,59 @@ void AppendPatchMPQFilesToList(char const* subdir, char const* suffix, char cons
 #endif
 }
 
+void ExtractCameraFiles(int const locale)
+{
+    HANDLE localeFile;
+    char localMPQ[512];
+    sprintf(localMPQ, "%s/Data/%s/locale-%s.MPQ", input_path, langs[locale], langs[locale]);
+    if (!SFileOpenArchive(localMPQ, 0, MPQ_OPEN_READ_ONLY, &localeFile))
+        exit(1);
+
+    printf("Extracting camera files...\n");
+
+    HANDLE dbcFile;
+    if (!SFileOpenFileEx(localeFile, "DBFilesClient\\CinematicCamera.dbc", SFILE_OPEN_FROM_MPQ, &dbcFile))
+    {
+        printf("Fatal error: Cannot find CinematicCamera.dbc in archive!\n");
+        exit(1);
+    }
+
+    DBCFile camdbc(dbcFile);
+    if (!camdbc.open())
+    {
+        printf("Unable to open CinematicCamera.dbc. Camera extract aborted.\n");
+        return;
+    }
+    // get camera file list from DBC
+    std::vector<std::string> camerafiles;
+    size_t cam_count = camdbc.getRecordCount();
+
+    for (size_t i = 0; i < cam_count; ++i)
+    {
+        std::string camFile(camdbc.getRecord(i).getString(1));
+        size_t loc = camFile.find(".mdx");
+        if (loc != std::string::npos)
+            camFile.replace(loc, 4, ".m2");
+        camerafiles.push_back(std::string(camFile));
+    }
+
+    std::string path = output_path;
+    path += "/Cameras/";
+    CreateDir(path);
+    // extract M2s
+    uint32 count = 0;
+    for (std::vector<std::string>::iterator iter = camerafiles.begin(); iter != camerafiles.end(); ++iter)
+    {
+        std::string filename = path;
+        filename += (iter->c_str() + strlen("Cameras\\"));
+
+        if (ExtractFile(iter->c_str(), filename))
+            ++count;
+    }
+
+    printf("Extracted %u camera files\n", count);
+}
+
 void LoadLocaleMPQFiles(int const locale)
 {
     char filename[512];
@@ -1195,6 +1247,16 @@ void LoadBaseMPQFiles()
     HANDLE worldMpqHandle;
 
     printf("Loaded MPQ files for map extraction:\n");
+    
+    sprintf(filename, "%s/Data/Art.MPQ", input_path);
+    printf("%s\n", filename);
+
+    if (!OpenArchive(filename, &worldMpqHandle))
+    {
+        printf("Error open archive: %s\n\n", filename);
+        return;
+    }
+    
     for (int i = 1; i <= WORLD_COUNT; i++)
     {
         sprintf(filename, "%s/Data/World%s.MPQ", input_path, (i == 2 ? "2" : ""));
@@ -1289,6 +1351,21 @@ int main(int argc, char* arg[])
     {
         printf("No locales detected\n");
         return 0;
+    }
+
+    if (CONF_extract & EXTRACT_CAMERA)
+    {
+        printf("Using locale: %s\n", langs[FirstLocale]);
+
+        // Open MPQs
+        LoadBaseMPQFiles();
+        LoadLocaleMPQFiles(FirstLocale);
+
+        // Extract Cameras
+        ExtractCameraFiles(FirstLocale);
+        
+        // Close MPQs
+        CloseArchives();
     }
 
     if (CONF_extract & EXTRACT_MAP)
