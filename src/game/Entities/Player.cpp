@@ -8452,47 +8452,47 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 outdoorPvP->FillInitialWorldStates(data, count);
             break;
         case 2597:                                          // AV
-            if (bg && bg->GetTypeID() == BATTLEGROUND_AV)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_AV)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 3277:                                          // WS
-            if (bg && bg->GetTypeID() == BATTLEGROUND_WS)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_WS)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 3358:                                          // AB
-            if (bg && bg->GetTypeID() == BATTLEGROUND_AB)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_AB)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 3820:                                          // EY
-            if (bg && bg->GetTypeID() == BATTLEGROUND_EY)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_EY)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 3698:                                          // Nagrand Arena
-            if (bg && bg->GetTypeID() == BATTLEGROUND_NA)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_NA)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 3702:                                          // Blade's Edge Arena
-            if (bg && bg->GetTypeID() == BATTLEGROUND_BE)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_BE)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 3968:                                          // Ruins of Lordaeron
-            if (bg && bg->GetTypeID() == BATTLEGROUND_RL)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_RL)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 4378:                                          // Dalaran Severs
-            if (bg && bg->GetTypeID() == BATTLEGROUND_DS)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_DS)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 4384:                                          // Strand of the Ancients
-            if (bg && bg->GetTypeID() == BATTLEGROUND_SA)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_SA)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 4406:                                          // Ring of Valor
-            if (bg && bg->GetTypeID() == BATTLEGROUND_RV)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_RV)
                 bg->FillInitialWorldStates(data, count);
             break;
         case 4710:                                          // Isle of Conquest
-            if (bg && bg->GetTypeID() == BATTLEGROUND_IC)
+            if (bg && bg->GetTypeId() == BATTLEGROUND_IC)
                 bg->FillInitialWorldStates(data, count);
             break;
     }
@@ -13590,7 +13590,7 @@ void Player::RewardQuest(Quest const* pQuest, uint32 reward, Object* questGiver,
     RemoveTimedQuest(quest_id);
 
     if (BattleGround* bg = GetBattleGround())
-        if (bg->GetTypeID() == BATTLEGROUND_AV)
+        if (bg->GetTypeId() == BATTLEGROUND_AV)
             ((BattleGroundAV*)bg)->HandleQuestComplete(pQuest->GetQuestId(), this);
 
     if (pQuest->GetRewChoiceItemsCount() > 0)
@@ -15475,10 +15475,10 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
 
         if (player_at_bg && currentBg->GetStatus() != STATUS_WAIT_LEAVE)
         {
-            BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
+            BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(currentBg->GetTypeId(), currentBg->GetArenaType());
             AddBattleGroundQueueId(bgQueueTypeId);
 
-            m_bgData.bgTypeID = currentBg->GetTypeID();     // bg data not marked as modified
+            m_bgData.bgTypeID = currentBg->GetTypeId();     // bg data not marked as modified
 
             // join player to battleground group
             currentBg->EventPlayerLoggedIn(this);

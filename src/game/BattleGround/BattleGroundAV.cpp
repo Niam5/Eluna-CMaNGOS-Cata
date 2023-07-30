@@ -759,7 +759,7 @@ void BattleGroundAV::Reset()
 {
     BattleGround::Reset();
     // set the reputation and honor variables:
-    bool isBGWeekend = BattleGroundMgr::IsBGWeekend(GetTypeID());
+    bool isBGWeekend = BattleGroundMgr::IsBGWeekend(GetTypeId());
 
     m_HonorMapComplete    = (isBGWeekend) ? BG_AV_KILL_MAP_COMPLETE_HOLIDAY : BG_AV_KILL_MAP_COMPLETE;
     m_RepTowerDestruction = (isBGWeekend) ? BG_AV_REP_TOWER_HOLIDAY         : BG_AV_REP_TOWER;

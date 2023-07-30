@@ -223,7 +223,7 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket& /*recv_d
     uint32 flagCarrierCountA = 0;   // obsolete
     uint32 flagCarrierCountH = 0;
 
-    switch (bg->GetTypeID())
+    switch (bg->GetTypeId())
     {
         case BATTLEGROUND_WS:
         {
@@ -382,7 +382,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket& recv_data)
     }
 
     // get real bg type
-    bgTypeId = bg->GetTypeID();
+    bgTypeId = bg->GetTypeId();
     // expected bracket entry
     PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), _player->GetLevel());
     if (!bracketEntry)
@@ -405,7 +405,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket& recv_data)
         if (_player->GetLevel() > bg->GetMaxLevel())
         {
             sLog.outError("Battleground: Player %s (%u) has level (%u) higher than maxlevel (%u) of battleground (%u)! Do not port him to battleground!",
-                          _player->GetName(), _player->GetGUIDLow(), _player->GetLevel(), bg->GetMaxLevel(), bg->GetTypeID());
+                          _player->GetName(), _player->GetGUIDLow(), _player->GetLevel(), bg->GetMaxLevel(), bg->GetTypeId());
             action = 0;
         }
     }
@@ -450,7 +450,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket& recv_data)
             sBattleGroundMgr.SendToBattleGround(_player, ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
             // add only in HandleMoveWorldPortAck()
             // bg->AddPlayer(_player,team);
-            DEBUG_LOG("Battleground: player %s (%u) joined battle for bg %u, bgtype %u, queue type %u.", _player->GetName(), _player->GetGUIDLow(), bg->GetInstanceID(), bg->GetTypeID(), bgQueueTypeId);
+            DEBUG_LOG("Battleground: player %s (%u) joined battle for bg %u, bgtype %u, queue type %u.", _player->GetName(), _player->GetGUIDLow(), bg->GetInstanceID(), bg->GetTypeId(), bgQueueTypeId);
             break;
         case 0:                                         // leave queue
             // if player leaves rated arena match before match start, it is counted as he played but he lost
@@ -471,7 +471,7 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket& recv_data)
             if (ginfo.arenaType == ARENA_TYPE_NONE)
                 sBattleGroundMgr.ScheduleQueueUpdate(ginfo.ArenaTeamRating, ginfo.arenaType, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
             SendPacket(data);
-            DEBUG_LOG("Battleground: player %s (%u) left queue for bgtype %u, queue type %u.", _player->GetName(), _player->GetGUIDLow(), bg->GetTypeID(), bgQueueTypeId);
+            DEBUG_LOG("Battleground: player %s (%u) left queue for bgtype %u, queue type %u.", _player->GetName(), _player->GetGUIDLow(), bg->GetTypeId(), bgQueueTypeId);
             break;
         default:
             sLog.outError("Battleground port: unknown action %u", action);
@@ -629,7 +629,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket& recv_data)
         return;
     }
 
-    BattleGroundTypeId bgTypeId = bg->GetTypeID();
+    BattleGroundTypeId bgTypeId = bg->GetTypeId();
     BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bgTypeId, arenatype);
     PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), _player->GetLevel());
     if (!bracketEntry)

@@ -519,7 +519,7 @@ void BattleGroundWS::Reset()
     m_flagCarrierAlliance.Clear();
     m_flagCarrierHorde.Clear();
 
-    bool isBGWeekend = BattleGroundMgr::IsBGWeekend(GetTypeID());
+    bool isBGWeekend = BattleGroundMgr::IsBGWeekend(GetTypeId());
     m_ReputationCapture = (isBGWeekend) ? WS_WEEKEND_FLAG_CAPTURE_REPUTATION : WS_NORMAL_FLAG_CAPTURE_REPUTATION;
     m_HonorWinKills = (isBGWeekend) ? WS_WEEKEND_WIN_KILLS : WS_NORMAL_WIN_KILLS;
     m_HonorEndKills = (isBGWeekend) ? WS_WEEKEND_MAP_COMPLETE_KILLS : WS_NORMAL_MAP_COMPLETE_KILLS;

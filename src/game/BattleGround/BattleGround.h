@@ -313,7 +313,7 @@ class BattleGround
         // Get methods:
         ObjectGuid GetObjectGuid() { return ObjectGuid(HIGHGUID_BATTLEGROUND, uint32(m_ArenaType), uint32(m_TypeID)); }
         char const* GetName() const         { return m_Name; }
-        BattleGroundTypeId GetTypeID() const { return m_TypeID; }
+        BattleGroundTypeId GetTypeId() const { return m_TypeID; }
         BattleGroundBracketId GetBracketId() const { return m_BracketId; }
         // the instanceId check is also used to determine a bg-template
         // that's why the m_map hack is here..

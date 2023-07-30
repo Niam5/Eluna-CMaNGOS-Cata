@@ -456,7 +456,7 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, BattleGround* bg,
         // not yet invited
         // set invitation
         ginfo->IsInvitedToBGInstanceGUID = bg->GetInstanceID();
-        BattleGroundTypeId bgTypeId = bg->GetTypeID();
+        BattleGroundTypeId bgTypeId = bg->GetTypeId();
         BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bgTypeId, bg->GetArenaType());
         BattleGroundBracketId bracket_id = bg->GetBracketId();
 
@@ -496,7 +496,7 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, BattleGround* bg,
             uint32 queueSlot = plr->GetBattleGroundQueueIndex(bgQueueTypeId);
 
             DEBUG_LOG("Battleground: invited %s to BG instance %u queueindex %u bgtype %u, I can't help it if they don't press the enter battle button.",
-                      plr->GetGuidStr().c_str(), bg->GetInstanceID(), queueSlot, bg->GetTypeID());
+                      plr->GetGuidStr().c_str(), bg->GetInstanceID(), queueSlot, bg->GetTypeId());
 
             // send status packet
             sBattleGroundMgr.BuildBattleGroundStatusPacket(data, bg, plr, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0, ginfo->arenaType);
@@ -773,7 +773,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
         next = itr;
         ++next;
         // DO NOT allow queue manager to invite new player to arena
-        if ((*itr)->isBattleGround() && (*itr)->GetTypeID() == bgTypeId && (*itr)->GetBracketId() == bracket_id &&
+        if ((*itr)->isBattleGround() && (*itr)->GetTypeId() == bgTypeId && (*itr)->GetBracketId() == bracket_id &&
                 (*itr)->GetStatus() > STATUS_WAIT_QUEUE && (*itr)->GetStatus() < STATUS_WAIT_LEAVE)
         {
             BattleGround* bg = *itr; // we have to store battleground pointer here, because when battleground is full, it is removed from free queue (not yet implemented!!)
@@ -1053,7 +1053,7 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     if (!bg)
         return true;
 
-    BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
+    BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bg->GetTypeId(), bg->GetArenaType());
     uint32 queueSlot = plr->GetBattleGroundQueueIndex(bgQueueTypeId);
     if (queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES)         // player is in queue or in battleground
     {
@@ -1486,7 +1486,7 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket& data, BattleGround* bg)
         else
             buffer << uint32(0);
 
-        switch (bg->GetTypeID())                            // battleground specific things
+        switch (bg->GetTypeId())                            // battleground specific things
         {
             case BATTLEGROUND_AV:
                 data.WriteBits(5, 24);                     // count of next fields
@@ -1522,7 +1522,7 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket& data, BattleGround* bg)
                 data.WriteBits(0, 24);                     // count of next fields
                 break;
              default:
-                sLog.outError("Unhandled SMSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
+                sLog.outError("Unhandled SMSG_PVP_LOG_DATA for BG id %u", bg->GetTypeId());
                 data.WriteBits(0, 24);                     // count of next fields
                 break;
         }
@@ -1852,7 +1852,7 @@ uint32 BattleGroundMgr::CreateBattleGround(BattleGroundTypeId bgTypeId, bool IsA
     bg->SetLevelRange(LevelMin, LevelMax);
 
     // add bg to update list
-    AddBattleGround(bg->GetInstanceID(), bg->GetTypeID(), bg);
+    AddBattleGround(bg->GetInstanceID(), bg->GetTypeId(), bg);
 
     // return some not-null value, bgTypeId is good enough for me
     return bgTypeId;

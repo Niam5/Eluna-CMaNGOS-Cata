@@ -242,12 +242,12 @@ BattleGround::~BattleGround()
 {
     // remove objects and creatures
     // (this is done automatically in mapmanager update, when the instance is reset after the reset time)
-    sBattleGroundMgr.RemoveBattleGround(GetInstanceID(), GetTypeID());
+    sBattleGroundMgr.RemoveBattleGround(GetInstanceID(), GetTypeId());
 
     // skip template bgs as they were never added to visible bg list
     BattleGroundBracketId bracketId = GetBracketId();
     if (bracketId != BG_BRACKET_ID_TEMPLATE)
-        sBattleGroundMgr.DeleteClientVisibleInstanceId(GetTypeID(), bracketId, GetClientInstanceID());
+        sBattleGroundMgr.DeleteClientVisibleInstanceId(GetTypeId(), bracketId, GetClientInstanceID());
 
     // unload map
     // map can be null at bg destruction
@@ -696,7 +696,7 @@ void BattleGround::EndBattleGround(Team winner)
         SqlStatement stmt = CharacterDatabase.CreateStatement(insPvPstatsBattleground, "INSERT INTO pvpstats_battlegrounds (id, winner_team, bracket_id, type, date) VALUES (?, ?, ?, ?, NOW())");
 
         uint8 battleground_bracket = GetMinLevel() / 10;
-        uint8 battleground_type = (uint8)GetTypeID();
+        uint8 battleground_type = (uint8)GetTypeId();
 
         // query next id
         result = CharacterDatabase.Query("SELECT MAX(id) FROM pvpstats_battlegrounds");
@@ -857,7 +857,7 @@ void BattleGround::EndBattleGround(Team winner)
         sBattleGroundMgr.BuildPvpLogDataPacket(data, this);
         plr->GetSession()->SendPacket(data);
 
-        BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeID(), GetArenaType());
+        BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeId(), GetArenaType());
         sBattleGroundMgr.BuildBattleGroundStatusPacket(data, this, plr, plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime(), GetArenaType());
         plr->GetSession()->SendPacket(data);
         plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND, 1);
@@ -886,7 +886,7 @@ uint32 BattleGround::GetBonusHonorFromKill(uint32 kills) const
 
 uint32 BattleGround::GetBattlemasterEntry() const
 {
-    switch (GetTypeID())
+    switch (GetTypeId())
     {
         case BATTLEGROUND_AV: return 15972;
         case BATTLEGROUND_WS: return 14623;
@@ -899,7 +899,7 @@ uint32 BattleGround::GetBattlemasterEntry() const
 
 void BattleGround::RewardMark(Player* plr, uint32 count)
 {
-    switch (GetTypeID())
+    switch (GetTypeId())
     {
         case BATTLEGROUND_AV:
             if (count == ITEM_WINNER_COUNT)
@@ -1003,7 +1003,7 @@ void BattleGround::SendRewardMarkByMail(Player* plr, uint32 mark, uint32 count)
 void BattleGround::RewardQuestComplete(Player* plr)
 {
     uint32 quest;
-    switch (GetTypeID())
+    switch (GetTypeId())
     {
         case BATTLEGROUND_AV:
             quest = SPELL_AV_QUEST_REWARD;
@@ -1072,8 +1072,8 @@ void BattleGround::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
 
     if (participant) // if the player was a match participant, remove auras, calc rating, update queue
     {
-        BattleGroundTypeId bgTypeId = GetTypeID();
-        BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeID(), GetArenaType());
+        BattleGroundTypeId bgTypeId = GetTypeId();
+        BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeId(), GetArenaType());
         if (plr)
         {
             plr->ClearAfkReports();
@@ -1206,7 +1206,7 @@ void BattleGround::StartBattleGround()
     // add bg to update list
     // This must be done here, because we need to have already invited some players when first BG::Update() method is executed
     // and it doesn't matter if we call StartBattleGround() more times, because m_BattleGrounds is a map and instance id never changes
-    sBattleGroundMgr.AddBattleGround(GetInstanceID(), GetTypeID(), this);
+    sBattleGroundMgr.AddBattleGround(GetInstanceID(), GetTypeId(), this);
 
 #ifdef BUILD_ELUNA
     if (Eluna* e = GetBgMap()->GetEluna())
@@ -1742,7 +1742,7 @@ void BattleGround::PlayerAddedToBGCheckIfBGIsRunning(Player* plr)
         return;
 
     WorldPacket data;
-    BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeID(), GetArenaType());
+    BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeId(), GetArenaType());
 
     BlockMovement(plr);
 

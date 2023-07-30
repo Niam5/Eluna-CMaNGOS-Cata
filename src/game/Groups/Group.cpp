@@ -1150,7 +1150,7 @@ uint32 Group::GetMaxSkillValueForGroup(SkillType skill)
 
 GroupJoinBattlegroundResult Group::CanJoinBattleGroundQueue(BattleGround const* bgOrTemplate, BattleGroundQueueTypeId bgQueueTypeId, uint32 MinPlayerCount, uint32 /*MaxPlayerCount*/, bool isRated, uint32 arenaSlot)
 {
-    BattlemasterListEntry const* bgEntry = sBattlemasterListStore.LookupEntry(bgOrTemplate->GetTypeID());
+    BattlemasterListEntry const* bgEntry = sBattlemasterListStore.LookupEntry(bgOrTemplate->GetTypeId());
     if (!bgEntry)
         return ERR_BATTLEGROUND_JOIN_FAILED;                // shouldn't happen
 
@@ -1198,7 +1198,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattleGroundQueue(BattleGround const* 
         if (member->InBattleGroundQueueForBattleGroundQueueType(bgQueueTypeId))
             return ERR_BATTLEGROUND_JOIN_FAILED;            // not blizz-like
         // check for deserter debuff in case not arena queue
-        if (bgOrTemplate->GetTypeID() != BATTLEGROUND_AA && !member->CanJoinToBattleground())
+        if (bgOrTemplate->GetTypeId() != BATTLEGROUND_AA && !member->CanJoinToBattleground())
             return ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS;
         // check if member can join any more battleground queues
         if (!member->HasFreeBattleGroundQueueId())
