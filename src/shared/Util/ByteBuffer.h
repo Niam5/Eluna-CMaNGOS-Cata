@@ -20,7 +20,7 @@
 #define _BYTEBUFFER_H
 
 #include "Common.h"
-#include "Log.h"
+#include "Log/Log.h"
 #include "Util/ByteConverter.h"
 
 #define BITS_1 uint8 _1

@@ -18,7 +18,7 @@
 
 #include "AuctionHouseBot.h"
 #include "Util/ProgressBar.h"
-#include "Log.h"
+#include "Log/Log.h"
 #include "Globals/ObjectMgr.h"
 #include "AuctionHouse/AuctionHouseMgr.h"
 #include "SystemConfig.h"

@@ -25,7 +25,7 @@
 #include "Entities/Player.h"
 #include "Server/Opcodes.h"
 #include "Chat/Chat.h"
-#include "Log.h"
+#include "Log/Log.h"
 #include "Maps/MapManager.h"
 #include "Globals/ObjectAccessor.h"
 #include "Tools/Language.h"

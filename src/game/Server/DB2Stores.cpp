@@ -19,7 +19,7 @@
 #include "DB2Stores.h"
 #include "DBCStores.h"
 #include "Policies/Singleton.h"
-#include "Log.h"
+#include "Log/Log.h"
 #include "Util/ProgressBar.h"
 #include "Globals/SharedDefines.h"
 #include "Entities/ObjectGuid.h"

@@ -24,7 +24,7 @@
 #include "MotionGenerators/MovementGenerator.h"
 #include "AI/ScriptDevAI/ScriptDevAIMgr.h"
 #include "Entities/Pet.h"
-#include "Log.h"
+#include "Log/Log.h"
 #include "AI/BaseAI/PetAI.h"
 
 INSTANTIATE_SINGLETON_1(CreatureAIRegistry);

@@ -75,8 +75,8 @@ set(SRC_GRP_DATABASE_DBC
 )
 
 set(SRC_GRP_LOG
-    Log.cpp
-    Log.h
+    Log/Log.cpp
+    Log/Log.h
 )
 
 set(SRC_GRP_MT

@@ -29,7 +29,7 @@
 #include "Auth/CryptoHash.h"
 #include "Server/WorldSession.h"
 #include "Util/CommonDefines.h"
-#include "Log.h"
+#include "Log/Log.h"
 #include "Server/DBCStores.h"
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"

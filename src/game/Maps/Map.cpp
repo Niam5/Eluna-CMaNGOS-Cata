@@ -20,7 +20,7 @@
 #include "Maps/MapManager.h"
 #include "Entities/Player.h"
 #include "Grids/GridNotifiers.h"
-#include "Log.h"
+#include "Log/Log.h"
 #include "Grids/CellImpl.h"
 #include "Maps/InstanceData.h"
 #include "Grids/GridNotifiersImpl.h"

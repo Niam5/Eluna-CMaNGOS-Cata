@@ -19,7 +19,7 @@
 #include "AI/BaseAI/ReactorAI.h"
 #include "Entities/Creature.h"
 #include "Maps/Map.h"
-#include "Log.h"
+#include "Log/Log.h"
 
 #define REACTOR_VISIBLE_RANGE (26.46f)
 
