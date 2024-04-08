@@ -1,5 +1,15 @@
 #####################################
-# Playerbot Configuration file      #
+# Playerbot Configuration file
+# 
+# 	To overwrite configuration fields with environment variables
+# 	use the following pattern to generate environment variable names:
+#
+# 		For PlayerbotAI.MaxNumBots:
+# 			export PlayerBot_PlayerbotAI_MaxNumBots=5
+#
+# 		For PlayerbotAI.SellAll.LevelDiff:
+# 			export PlayerBot_PlayerbotAI_SellAll_LevelDiff=5
+#
 #####################################
 
 [PlayerbotConf]

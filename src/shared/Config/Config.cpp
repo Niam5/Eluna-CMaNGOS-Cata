@@ -18,6 +18,8 @@
 
 #include "Config.h"
 #include "Policies/Singleton.h"
+#include "Util/Util.h"
+#include "Log/Log.h"
 #include <mutex>
 
 #include <boost/algorithm/string.hpp>
@@ -25,12 +27,18 @@
 #include <unordered_map>
 #include <string>
 #include <fstream>
+#include <cstdlib>
+#include <optional>
+#include <algorithm>
 
 INSTANTIATE_SINGLETON_1(Config);
 
-bool Config::SetSource(const std::string& file)
+std::optional<std::string> EnvVarForIniKey(std::string const&, std::string const&);
+
+bool Config::SetSource(const std::string& file, const std::string& envVarPrefix)
 {
     m_filename = file;
+    m_envVarPrefix = envVarPrefix;
 
     return Reload();
 }
@@ -62,8 +70,13 @@ bool Config::Reload()
         if (equals == std::string::npos)
             return false;
 
-        auto const entry = boost::algorithm::trim_copy(boost::algorithm::to_lower_copy(line.substr(0, equals)));
-        auto const value = boost::algorithm::trim_copy_if(boost::algorithm::trim_copy(line.substr(equals + 1)), boost::algorithm::is_any_of("\""));
+        auto const trimmedEntry = boost::algorithm::trim_copy(line.substr(0, equals));
+        auto const entry = boost::algorithm::to_lower_copy(trimmedEntry);
+        auto value = boost::algorithm::trim_copy_if(boost::algorithm::trim_copy(line.substr(equals + 1)), boost::algorithm::is_any_of("\""));
+
+        std::optional<std::string> envValue = EnvVarForIniKey(m_envVarPrefix, trimmedEntry);
+        if (envValue)
+            value = *envValue;
 
         newEntries[entry] = value;
     }
@@ -86,7 +99,19 @@ const std::string Config::GetStringDefault(const std::string& name, const std::s
 
     auto const entry = m_entries.find(nameLower);
 
-    return entry == m_entries.cend() ? def : entry->second;
+    if (entry == m_entries.cend())
+    {
+        std::optional<std::string> envVar = EnvVarForIniKey(m_envVarPrefix, name);
+        if (envVar)
+        {
+            sLog.outString("Missing key '%s' in config file '%s', recovered with environment '%s' value.", name.c_str(), m_filename.c_str(), envVar->c_str());
+            return *envVar;
+        }
+
+        return def;
+    }
+
+    return entry->second;
 }
 
 bool Config::GetBoolDefault(const std::string& name, bool def) const
@@ -113,3 +138,14 @@ float Config::GetFloatDefault(const std::string& name, float def) const
     return std::stof(value);
 }
 
+std::optional<std::string> EnvVarForIniKey(std::string const& prefix, std::string const& key)
+{
+    std::string escapedKey = key;
+    std::replace(escapedKey.begin(), escapedKey.end(), '.', '_');
+    std::string envKey = prefix + escapedKey;
+    char* val = std::getenv(envKey.c_str());
+    if (!val)
+        return {};
+
+    return std::string(val);
+}
