@@ -172,20 +172,14 @@ bool EquippedOk(Player* pPlayer, uint32 spellId)
     if (!spell)
         return false;
 
-    for (int i = 0; i < 3; ++i)
+    for (unsigned int reqSpell : spell->EffectTriggerSpell)
     {
-        SpellEffectEntry const* pSpellEffect = spell->GetSpellEffect(SpellEffectIndex(i));
-        if (!pSpellEffect)
-            continue;
-
-        uint32 reqSpell = pSpellEffect->EffectTriggerSpell;;
         if (!reqSpell)
             continue;
 
-        Item* pItem;
         for (int j = EQUIPMENT_SLOT_START; j < EQUIPMENT_SLOT_END; ++j)
         {
-            pItem = pPlayer->GetItemByPos(INVENTORY_SLOT_BAG_0, j);
+            Item* pItem = pPlayer->GetItemByPos(INVENTORY_SLOT_BAG_0, j);
             if (pItem)
                 if (pItem->GetProto()->RequiredSpell == reqSpell)
                 {

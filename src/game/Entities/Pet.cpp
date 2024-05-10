@@ -746,22 +746,21 @@ void Pet::Unsummon(PetSaveMode mode, Unit* owner /*= nullptr*/)
             {
                 // returning of reagents only for players, so best done here
                 uint32 spellId = GetUInt32Value(UNIT_CREATED_BY_SPELL);
-                SpellEntry const *spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
-                SpellReagentsEntry const* spellReagents = spellInfo ? spellInfo->GetSpellReagents() : NULL;
+                SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
 
-                if (spellReagents)
+                if (spellInfo)
                 {
                     for (uint32 i = 0; i < MAX_SPELL_REAGENTS; ++i)
                     {
-                        if (spellReagents->Reagent[i] > 0)
+                        if (spellInfo->Reagent[i] > 0)
                         {
                             ItemPosCountVec dest;           //for succubus, voidwalker, felhunter and felguard credit soulshard when despawn reason other than death (out of range, logout)
-                            uint8 msg = p_owner->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, spellReagents->Reagent[i], spellReagents->ReagentCount[i]);
+                            uint8 msg = p_owner->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, spellInfo->Reagent[i], spellInfo->ReagentCount[i]);
                             if (msg == EQUIP_ERR_OK)
                             {
-                                Item* item = p_owner->StoreNewItem(dest, spellReagents->Reagent[i], true);
+                                Item* item = p_owner->StoreNewItem(dest, spellInfo->Reagent[i], true);
                                 if (p_owner->IsInWorld())
-                                    p_owner->SendNewItem(item, spellReagents->ReagentCount[i], true, false);
+                                    p_owner->SendNewItem(item, spellInfo->ReagentCount[i], true, false);
                             }
                         }
                     }
@@ -1428,7 +1427,7 @@ void Pet::_LoadAuras(uint32 timediff)
             }
 
             // prevent wrong values of remaincharges
-            uint32 procCharges = spellproto->GetProcCharges();
+            uint32 procCharges = spellproto->ProcCharges;
             if (procCharges)
             {
                 if (remaincharges <= 0 || remaincharges > procCharges)
@@ -1437,7 +1436,7 @@ void Pet::_LoadAuras(uint32 timediff)
             else
                 remaincharges = 0;
 
-            uint32 defstackamount = spellproto->GetStackAmount();
+            uint32 defstackamount = spellproto->StackAmount;
             if (!defstackamount)
                 stackcount = 1;
             else if (defstackamount < stackcount)
@@ -1510,13 +1509,9 @@ void Pet::_SaveAuras()
         for (int32 j = 0; j < MAX_EFFECT_INDEX; ++j)
         {
             SpellEntry const* spellInfo = holder->GetSpellProto();
-            SpellEffectEntry const* effectEntry = spellInfo->GetSpellEffect(SpellEffectIndex(j));
-            if(!effectEntry)
-                continue;
-
-            if (effectEntry->EffectApplyAuraName == SPELL_AURA_MOD_STEALTH ||
-                effectEntry->Effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||
-                effectEntry->Effect == SPELL_EFFECT_APPLY_AREA_AURA_PET )
+            if (spellInfo->EffectApplyAuraName[j] == SPELL_AURA_MOD_STEALTH ||
+                spellInfo->Effect[j] == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||
+                spellInfo->Effect[j] == SPELL_EFFECT_APPLY_AREA_AURA_PET)
             {
                 save = false;
                 break;
@@ -1745,7 +1740,7 @@ void Pet::InitLevelupSpellsForLevel()
                 continue;
 
             // will called first if level down
-            if(spellEntry->GetSpellLevel() > level)
+            if(spellEntry->SpellLevel > level)
                 unlearnSpell(spellEntry->Id,true);
             // will called if level up
             else

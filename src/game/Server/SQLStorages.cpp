@@ -35,7 +35,7 @@ const char InstanceTemplatedstfmt[] = "iiiiil";
 const char WorldTemplatesrcfmt[] = "is";
 const char WorldTemplatedstfmt[] = "ii";
 const char ConditionsFmt[] = "iiiix";
-const char SpellEntryfmt[] = "iiiiiiiiiiiiiiiifiiiissiiiiiiiiiiiiiiiiii";
+const char SpellEntryfmt[] = "iiiiiiiiiiiiiiiiiifiiiissiiiiiiiiiiiiiiiiiiiiiiiiiiLiiiiiiiiiiiiiiiiiifiiiiiiiiiiiiiiiifiiiiiiiiiiiiiifffiiifffiiiiiiiiiiiiiiiiiiiiiffffffiiiiiiiiiiiiiiifffiiiiiiiii";
 //const char SpellTemplatesrcfmt[] = "iiiiiiiiiiiiiiiix";
 //                                  0         10        20        30        40        50        60        70        80        90        100       110       120       130       140       150       160     170       180  185
 //const char SpellTemplatedstfmt[] = "ixxxiiiixxxxxxxxxxxxxxxxxxxxxxxxiixxxxixxxxxxFxxxxxxxxxxxxxxxxxxxxxxixxxxxFFFxxxxxxixxixxixxixxxxxFFFxxxxxxixxixxixxFFFxxxxxxxxxxxxxppppppppppppppppppppppppppppppppxxxxxxxxxxxFFFxxxxxx";
@@ -46,8 +46,6 @@ const char CreatureTemplateSpellsFmt[] = "iiiiiiiiiii";
 const char SpellScriptTargetFmt[] = "iiii";
 const char DungeonEncounterFmt[] = "iiiiissssssssssssssss";
 const char AreaGroupEntryFmt[] = "iiiiiiii";
-const char SpellAuraOptionsEntrysrcfmt[] = "iiiii";
-const char SpellAuraOptionsEntrydstfmt[] = "diiii";
 const char SpellEffectEntrysrcfmt[] = "iifiiiffiiiiiifiifiiiiiiii";
 const char SpellEffectEntrydstfmt[] = "difiiiffiiiiiifiifiiiiiiii";
 
@@ -64,9 +62,6 @@ SQLStorage sConditionStorage(ConditionsFmt, "condition_entry", "conditions");
 SQLStorage sDungeonEncounterStore(DungeonEncounterFmt, "id", "instance_dungeon_encounters");
 SQLStorage sAreaGroupStore(AreaGroupEntryFmt, "id", "area_group_template");
 SQLStorage sSpellTemplate(SpellEntryfmt, "id", "spell_template");
-SQLStorage sSpellAuraOptionsStore(SpellAuraOptionsEntrysrcfmt, SpellAuraOptionsEntrydstfmt, "id", "spell_aura_options");
-SQLStorage sSpellEffectStore(SpellEffectEntrysrcfmt, SpellEffectEntrydstfmt, "id", "spell_effect");
-
 
 SQLHashStorage sGameObjectDataAddonStorage(GameObjectInfoAddonInfofmt, "guid", "gameobject_addon");
 SQLHashStorage sGOStorage(GameObjectInfosrcfmt, GameObjectInfodstfmt, "entry", "gameobject_template");

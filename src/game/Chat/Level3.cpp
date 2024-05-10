@@ -2452,7 +2452,7 @@ bool ChatHandler::HandleLearnAllMySpellsCommand(char* /*args*/)
             continue;
 
         // skip server-side/triggered spells
-        if(spellInfo->GetSpellLevel()==0)
+        if(spellInfo->SpellLevel==0)
             continue;
 
         // skip wrong class/race skills
@@ -2460,7 +2460,7 @@ bool ChatHandler::HandleLearnAllMySpellsCommand(char* /*args*/)
             continue;
 
         // skip other spell families
-        if( spellInfo->GetSpellFamilyName() != family)
+        if( spellInfo->SpellFamilyName != family)
             continue;
 
         // skip spells with first rank learned as talent (and all talents then also)
@@ -3428,8 +3428,7 @@ void ChatHandler::ShowSpellListHelper(Player* target, SpellEntry const* spellInf
     uint32 id = spellInfo->Id;
 
     bool known = target && target->HasSpell(id);
-    SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(EFFECT_INDEX_0);
-    bool learn = (spellEffect && spellEffect->Effect == SPELL_EFFECT_LEARN_SPELL);
+    bool learn = (spellInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_LEARN_SPELL);
 
     uint32 talentCost = GetTalentSpellCost(id);
 
@@ -3439,7 +3438,7 @@ void ChatHandler::ShowSpellListHelper(Player* target, SpellEntry const* spellInf
 
     // unit32 used to prevent interpreting uint8 as char at output
     // find rank of learned spell for learning spell, or talent rank
-    uint32 rank = talentCost ? talentCost : sSpellMgr.GetSpellRank(learn ? (spellEffect ? spellEffect->EffectTriggerSpell : 0) : id);
+    uint32 rank = talentCost ? talentCost : sSpellMgr.GetSpellRank(learn ?  spellInfo->EffectTriggerSpell[EFFECT_INDEX_0] : id);
 
     // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
     std::ostringstream ss;
@@ -4204,11 +4203,7 @@ bool ChatHandler::HandleAuraCommand(char* args)
 
     for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
     {
-        SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(SpellEffectIndex(i));
-        if(!spellEffect)
-            continue;
-
-        uint8 eff = spellEffect->Effect;
+        uint8 eff = spellInfo->Effect[i];
         if (eff>=TOTAL_SPELL_EFFECTS)
             continue;
 

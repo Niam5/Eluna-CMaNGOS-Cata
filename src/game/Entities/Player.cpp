@@ -3625,12 +3625,10 @@ bool Player::IsNeedCastPassiveLikeSpellAtLearn(SpellEntry const* spellInfo) cons
 
     // note: form passives activated with shapeshift spells be implemented by HandleShapeshiftBoosts instead of spell_learn_spell
     // talent dependent passives activated at form apply have proper stance data
-    SpellShapeshiftEntry const* shapeShift = spellInfo->GetSpellShapeshift();
-    bool need_cast = (!shapeShift || !shapeShift->Stances || (!form && spellInfo->HasAttribute(SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT)));
+    bool need_cast = !spellInfo->Stances || (!form && spellInfo->HasAttribute(SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT));
 
     // Check CasterAuraStates
-    SpellAuraRestrictionsEntry const* auraRestrictions = spellInfo->GetSpellAuraRestrictions();
-    return need_cast && (!auraRestrictions || !auraRestrictions->CasterAuraState || HasAuraState(AuraState(auraRestrictions->CasterAuraState)));
+    return need_cast && (!spellInfo->CasterAuraState || HasAuraState(AuraState(spellInfo->CasterAuraState)));
 }
 
 void Player::learnSpell(uint32 spell_id, bool dependent)
@@ -3906,7 +3904,7 @@ void Player::RemoveArenaSpellCooldowns()
 {
     // remove cooldowns on spells that has < 10 min CD (since patch 3.3, before it was 15 min)
     const uint32 MaxCDDelay = 10 * MINUTE * IN_MILLISECONDS;
-    auto cdCheck = [&](SpellEntry const& spellEntry) -> bool { return (spellEntry.GetRecoveryTime() < MaxCDDelay && (spellEntry.GetCategoryRecoveryTime() < MaxCDDelay)); };
+    auto cdCheck = [&](SpellEntry const& spellEntry) -> bool { return (spellEntry.RecoveryTime < MaxCDDelay && (spellEntry.CategoryRecoveryTime < MaxCDDelay)); };
     RemoveSomeCooldown(cdCheck);
 }
 
@@ -4452,10 +4450,9 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     SpellEntry const* spell = sSpellTemplate.LookupEntry<SpellEntry>(trainer_spell->learnedSpell);
 
     // secondary prof. or not prof. spell
-    SpellEffectEntry const* spellEffect = spell->GetSpellEffect(EFFECT_INDEX_1);
-    uint32 skill = spellEffect ? spellEffect->EffectMiscValue : 0;
+    uint32 skill = spell->EffectMiscValue[1];
 
-    if(spellEffect && (spellEffect->Effect != SPELL_EFFECT_SKILL || !IsPrimaryProfessionSkill(skill)))
+    if(spell->Effect[1] != SPELL_EFFECT_SKILL || !IsPrimaryProfessionSkill(skill))
         return TRAINER_SPELL_GREEN;
 
     // check primary prof. limit
@@ -5795,7 +5792,7 @@ bool Player::UpdateCraftSkill(uint32 spellid)
 
             // Alchemy Discoveries here
             SpellEntry const* spellEntry = sSpellTemplate.LookupEntry<SpellEntry>(spellid);
-            if (spellEntry && spellEntry->GetMechanic() == MECHANIC_DISCOVERY)
+            if (spellEntry && spellEntry->Mechanic == MECHANIC_DISCOVERY)
             {
                 if (uint32 discoveredSpell = GetSkillDiscoverySpell(skill->skillId, spellid, this))
                     learnSpell(discoveredSpell, false);
@@ -6574,10 +6571,7 @@ void Player::CheckAreaExploreAndOutdoor()
             SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(itr->first);
             if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAura(itr->first))
                 continue;
-
-            SpellShapeshiftEntry const* shapeShift = spellInfo->GetSpellShapeshift();
-
-            if (!shapeShift || (shapeShift->Stances || shapeShift->StancesNot) && !IsNeedCastSpellAtFormApply(spellInfo, GetShapeshiftForm()))
+            if ((spellInfo->Stances || spellInfo->StancesNot) && !IsNeedCastSpellAtFormApply(spellInfo, GetShapeshiftForm()))
                 continue;
             CastSpell(this, spellInfo, TRIGGERED_OLD_TRIGGERED, nullptr);
         }
@@ -7710,7 +7704,7 @@ void Player::_ApplyWeaponDependentAuraMods(Item* item, WeaponAttackType attackTy
 void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attackType, Aura* aura, bool apply)
 {
     // generic not weapon specific case processes in aura code
-    if(aura->GetSpellProto()->GetEquippedItemClass() == -1)
+    if(aura->GetSpellProto()->EquippedItemClass == -1)
         return;
 
     BaseModGroup mod;
@@ -7736,7 +7730,7 @@ void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType att
         return;
 
     // generic not weapon specific case processes in aura code
-    if(aura->GetSpellProto()->GetEquippedItemClass() == -1)
+    if(aura->GetSpellProto()->EquippedItemClass == -1)
         return;
 
     UnitMods unitMod;
@@ -7954,7 +7948,7 @@ void Player::_HandleDeadlyPoison(Unit* Target, WeaponAttackType attType, SpellEn
             break;
         }
     }
-    if (dPoison && dPoison->GetStackAmount() == spellInfo->GetStackAmount())
+    if (dPoison && dPoison->GetStackAmount() == spellInfo->StackAmount)
     {
         Item* otherWeapon = GetWeaponForAttack(attType == BASE_ATTACK ? OFF_ATTACK : BASE_ATTACK);
         if (!otherWeapon)
@@ -7975,7 +7969,7 @@ void Player::_HandleDeadlyPoison(Unit* Target, WeaponAttackType attType, SpellEn
                 continue;
 
             if (SpellEntry const* combatEntry = sSpellTemplate.LookupEntry<SpellEntry>(pSecondEnchant->spellid[s]))
-                if (combatEntry->GetDispel() == DISPEL_POISON)
+                if (combatEntry->Dispel == DISPEL_POISON)
                     CastSpell(Target, combatEntry, TRIGGERED_OLD_TRIGGERED, otherWeapon);
         }
     }
@@ -8017,7 +8011,7 @@ void Player::CastItemCombatSpell(Unit* Target, WeaponAttackType attType)
         if (m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
             return;
 
-        float chance = (float)spellInfo->GetProcChance();
+        float chance = (float)spellInfo->ProcChance;
 
         if (spellData.SpellPPMRate)
         {
@@ -10770,7 +10764,7 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                     sLog.outError("Weapon switch cooldown spell %u couldn't be found in Spell.dbc", cooldownSpell);
                 else
                 {
-                    m_weaponChangeTimer = spellProto->GetStartRecoveryTime();
+                    m_weaponChangeTimer = spellProto->StartRecoveryTime;
                     AddGCD(*spellProto, 0, true);
                 }
             }
@@ -13768,15 +13762,10 @@ void Player::RewardQuest(Quest const* pQuest, uint32 reward, Object* questGiver,
             {
                 for (uint8 i = 0; i < MAX_EFFECT_INDEX; ++i)
                 {
-                    SpellEffectEntry const* spellEffect = spellProto->GetSpellEffect(SpellEffectIndex(i));
-
-                    if (!spellEffect)
-                        break;
-
-                    if (spellEffect->Effect == SPELL_EFFECT_LEARN_SPELL ||
-                        spellEffect->Effect == SPELL_EFFECT_CREATE_ITEM ||
-                        spellEffect->EffectImplicitTargetA == TARGET_DUELVSPLAYER ||
-                        spellEffect->EffectImplicitTargetA == TARGET_SINGLE_FRIEND)
+                    if (spellProto->Effect[i] == SPELL_EFFECT_LEARN_SPELL ||
+                            spellProto->Effect[i] == SPELL_EFFECT_CREATE_ITEM ||
+                            spellProto->EffectImplicitTargetA[i] == TARGET_DUELVSPLAYER ||
+                            spellProto->EffectImplicitTargetA[i] == TARGET_SINGLE_FRIEND)
                     {
                         caster = (Unit*)questGiver;
                         break;
@@ -15999,7 +15988,7 @@ void Player::_LoadAuras(QueryResult* result, uint32 timediff)
             }
 
             // prevent wrong values of remaincharges
-            if (uint32 procCharges = spellproto->GetProcCharges())
+            if (uint32 procCharges = spellproto->ProcCharges)
             {
                 if (remaincharges <= 0 || remaincharges > procCharges)
                     remaincharges = procCharges;
@@ -16007,7 +15996,7 @@ void Player::_LoadAuras(QueryResult* result, uint32 timediff)
             else
                 remaincharges = 0;
 
-            uint32 defstackamount = spellproto->GetStackAmount();
+            uint32 defstackamount = spellproto->StackAmount;
             if (!defstackamount)
                 stackcount = 1;
             else if (defstackamount < stackcount)
@@ -20461,13 +20450,10 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     bool found = false;
     for (int i = 0; i < MAX_EFFECT_INDEX; ++i)
     {
-        if(SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(SpellEffectIndex(i)))
+        if(spellInfo->Effect[i] == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->EffectTriggerSpell[i]))
         {
-            if(spellEffect->Effect == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellEffect->EffectTriggerSpell))
-            {
-                found = true;
-                break;
-            }
+            found = true;
+            break;
         }
     }
 
@@ -20476,8 +20462,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
         return;
 
     // prevent learn non first rank unknown profession and second specialization for same profession)
-    SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(EFFECT_INDEX_0);
-    uint32 learned_0 = spellEffect ? spellEffect->EffectTriggerSpell : 0;
+    uint32 learned_0 = spellInfo->EffectTriggerSpell[EFFECT_INDEX_0];
 
     if( sSpellMgr.GetSpellRank(learned_0) > 1 && !HasSpell(learned_0) )
     {
@@ -20491,9 +20476,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
             return;
 
         // specialization
-        SpellEffectEntry const* learnedSpellEffect0 = learnedInfo->GetSpellEffect(EFFECT_INDEX_0);
-        SpellEffectEntry const* learnedSpellEffect1 = learnedInfo->GetSpellEffect(EFFECT_INDEX_1);
-        if (learnedSpellEffect0 && learnedSpellEffect0->Effect == SPELL_EFFECT_TRADE_SKILL && learnedSpellEffect1 && learnedSpellEffect1->Effect == 0)
+        if (learnedInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_TRADE_SKILL && learnedInfo->Effect[EFFECT_INDEX_1] == 0)
         {
             // search other specialization for same prof
             for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
@@ -20506,9 +20489,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
                     return;
 
                 // compare only specializations
-                SpellEffectEntry const* itrSpellEffect0 = learnedInfo->GetSpellEffect(EFFECT_INDEX_0);
-                SpellEffectEntry const* itrSpellEffect1 = learnedInfo->GetSpellEffect(EFFECT_INDEX_1);
-                if ((itrSpellEffect0 && itrSpellEffect0->Effect != SPELL_EFFECT_TRADE_SKILL) || (itrSpellEffect1 && itrSpellEffect1->Effect != 0))
+                if ((learnedInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_TRADE_SKILL) || (learnedInfo->Effect[EFFECT_INDEX_1] != 0))
                     continue;
 
                 // compare same chain spells
@@ -20910,7 +20891,7 @@ void Player::AutoUnequipOffhandIfNeed()
 
 bool Player::HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item const* ignoreItem)
 {
-    int32 itemClass = spellInfo->GetEquippedItemClass();
+    int32 itemClass = spellInfo->EquippedItemClass;
     if(itemClass < 0)
         return true;
 
@@ -21800,9 +21781,10 @@ void Player::UpdateRuneRegen(RuneType rune)
 
     float auraMod = 1.0f;
     Unit::AuraList const& regenAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    for (Unit::AuraList::const_iterator i = regenAuras.begin(); i != regenAuras.end(); ++i)
-        if ((*i)->GetMiscValue() == POWER_RUNE && (*i)->GetSpellEffect()->EffectMiscValueB == rune)
-            auraMod *= (100.0f + (*i)->GetModifier()->m_amount) / 100.0f;
+    for (auto i : regenAuras)
+    //for (Unit::AuraList::const_iterator i = regenAuras.begin(); i != regenAuras.end(); ++i)
+        if (i->GetMiscValue() == POWER_RUNE && i->GetMiscBValue() == rune)
+            auraMod *= (100.0f + i->GetModifier()->m_amount) / 100.0f;
 
     // Unholy Presence
     if (Aura* aura = GetAura(48265, EFFECT_INDEX_0))
@@ -23353,25 +23335,20 @@ void Player::SendDuelCountdown(uint32 counter)
 
 bool Player::IsImmuneToSpellEffect(SpellEntry const* spellInfo, SpellEffectIndex index, bool castOnSelf) const
 {
-    SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(index);
-    if(spellEffect)
+    switch(spellInfo->Effect[index])
     {
-        switch(spellEffect->Effect)
-        {
-            case SPELL_EFFECT_ATTACK_ME:
-                return true;
-            default:
-                break;
-        }
-        switch(spellEffect->EffectApplyAuraName)
-        {
-            case SPELL_AURA_MOD_TAUNT:
-                return true;
-            default:
-                break;
-        }
+        case SPELL_EFFECT_ATTACK_ME:
+            return true;
+        default:
+            break;
     }
-
+    switch(spellInfo->EffectApplyAuraName[index])
+    {
+        case SPELL_AURA_MOD_TAUNT:
+            return true;
+        default:
+            break;
+    }
     return Unit::IsImmuneToSpellEffect(spellInfo, index, castOnSelf);
 }
 
@@ -24204,10 +24181,10 @@ bool Player::FitArmorSpecializationRules(SpellEntry const * spellProto) const
     if (!HasSpell(armorSpecToClass[getClass()]))
         return false;
 
-    if (SpellEquippedItemsEntry const * itemsEntry = spellProto->GetSpellEquippedItems())
+    if (spellProto->EquippedItemClass != -1 && spellProto->EquippedItemSubClassMask != 0 && spellProto->EquippedItemInventoryTypeMask != 0)
     {
         // there spells check items with inventory types which are in EquippedItemInventoryTypeMask
-        uint32 inventoryTypeMask = itemsEntry->EquippedItemInventoryTypeMask;
+        uint32 inventoryTypeMask = spellProto->EquippedItemInventoryTypeMask;
         // get slots that should be check for item presence and SpellEquippedItemsEntry match
         uint32 slotMask = 0;
         uint8 slots[4];
@@ -24232,10 +24209,10 @@ bool Player::FitArmorSpecializationRules(SpellEntry const * spellProto) const
                 if (!item)
                     return false;
 
-                if (item->GetProto()->Class != itemsEntry->EquippedItemClass)
+                if (item->GetProto()->Class != spellProto->EquippedItemClass)
                     return false;
 
-                if (((1 << item->GetProto()->SubClass) & itemsEntry->EquippedItemSubClassMask) == 0)
+                if (((1 << item->GetProto()->SubClass) & spellProto->EquippedItemSubClassMask) == 0)
                     return false;
             }
         }
@@ -24386,7 +24363,7 @@ void Player::ResetDeathTimer()
 
 void Player::AddGCD(SpellEntry const& spellEntry, uint32 forcedDuration /*= 0*/, bool updateClient /*= false*/)
 {
-    int32 gcdDuration = spellEntry.GetStartRecoveryTime();
+    int32 gcdDuration = spellEntry.StartRecoveryTime;
     if (!gcdDuration)
         return;
 
@@ -24417,9 +24394,9 @@ void Player::AddGCD(SpellEntry const& spellEntry, uint32 forcedDuration /*= 0*/,
 
 void Player::AddCooldown(SpellEntry const& spellEntry, ItemPrototype const* itemProto /*= nullptr*/, bool permanent /*= false*/, uint32 forcedDuration /*= 0*/)
 {
-    uint32 spellCategory = spellEntry.GetCategory();
-    int32 recTime = spellEntry.GetRecoveryTime(); // int because of spellmod calculations
-    int32 categoryRecTime = spellEntry.GetCategoryRecoveryTime(); // int because of spellmod calculations
+    uint32 spellCategory = spellEntry.Category;
+    int32 recTime = spellEntry.RecoveryTime; // int because of spellmod calculations
+    int32 categoryRecTime = spellEntry.CategoryRecoveryTime; // int because of spellmod calculations
     uint32 itemId = 0;
 
     if (itemProto)

@@ -1,0 +1,1 @@
+ALTER TABLE db_version CHANGE COLUMN required_c0002_01_mangos_loot_templates required_c0003_01_mangos_spell_data_fixes bit;

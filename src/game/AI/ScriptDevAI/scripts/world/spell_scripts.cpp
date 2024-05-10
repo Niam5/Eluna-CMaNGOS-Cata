@@ -792,7 +792,7 @@ bool EffectDummyCreature_spell_dummy_npc(Unit* pCaster, uint32 uiSpellId, SpellE
                     {
                         pCaster->CastSpell(pCreatureTarget, pSpell->Id, TRIGGERED_OLD_TRIGGERED);
 
-                        if (Pet* pPet = pCaster->FindGuardianWithEntry(pSpell->GetEffectMiscValue(SpellEffectIndex(uiEffIndex))))
+                        if (Pet* pPet = pCaster->FindGuardianWithEntry(pSpell->EffectMiscValue[uiEffIndex]))
                             pPet->CastSpell(pCaster, SPELL_REPROGRAM_KILL_CREDIT, TRIGGERED_OLD_TRIGGERED);
 
                         pCreatureTarget->ForcedDespawn();

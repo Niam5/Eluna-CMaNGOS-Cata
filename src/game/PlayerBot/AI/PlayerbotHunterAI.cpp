@@ -346,7 +346,7 @@ bool PlayerbotHunterAI::IsTargetEnraged(Unit* pTarget)
     {
         SpellAuraHolder *holder = itr->second;
         // Return true is target unit has aura with DISPEL_ENRAGE dispel type
-        if ((1 << holder->GetSpellProto()->GetDispel()) & GetDispellMask(DISPEL_ENRAGE))
+        if ((1 << holder->GetSpellProto()->Dispel) & GetDispellMask(DISPEL_ENRAGE))
             return true;
     }
 

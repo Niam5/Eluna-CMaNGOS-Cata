@@ -35,7 +35,6 @@ char const* GetPetName(uint32 petfamily, uint32 dbclang);
 uint32 GetTalentSpellCost(uint32 spellId);
 uint32 GetTalentSpellCost(TalentSpellPos const* pos);
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId);
-SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, SpellEffectIndex effect);
 
 int32 GetAreaFlagByAreaID(uint32 area_id);                  // -1 if not found
 uint32 GetAreaFlagByMapId(uint32 mapid);
@@ -211,20 +210,7 @@ extern DBCStorage <SpellRadiusEntry>             sSpellRadiusStore;
 extern DBCStorage <SpellRangeEntry>              sSpellRangeStore;
 extern DBCStorage <SpellRuneCostEntry>           sSpellRuneCostStore;
 extern DBCStorage <SpellShapeshiftFormEntry>     sSpellShapeshiftFormStore;
-extern DBCStorage <SpellAuraRestrictionsEntry>   sSpellAuraRestrictionsStore;
-extern DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore;
-extern DBCStorage <SpellCategoriesEntry>         sSpellCategoriesStore;
-extern DBCStorage <SpellClassOptionsEntry>       sSpellClassOptionsStore;
-extern DBCStorage <SpellCooldownsEntry>          sSpellCooldownsStore;
-extern DBCStorage <SpellEquippedItemsEntry>      sSpellEquippedItemsStore;
-extern DBCStorage <SpellInterruptsEntry>         sSpellInterruptsStore;
-extern DBCStorage <SpellLevelsEntry>             sSpellLevelsStore;
-extern DBCStorage <SpellPowerEntry>              sSpellPowerStore;
-extern DBCStorage <SpellReagentsEntry>           sSpellReagentsStore;
 extern DBCStorage <SpellScalingEntry>            sSpellScalingStore;
-extern DBCStorage <SpellShapeshiftEntry>         sSpellShapeshiftStore;
-extern DBCStorage <SpellTargetRestrictionsEntry> sSpellTargetRestrictionsStore;
-extern DBCStorage <SpellTotemsEntry>             sSpellTotemsStore;
 //extern DBCStorage <StableSlotPricesEntry>        sStableSlotPricesStore;
 extern DBCStorage <SummonPropertiesEntry>        sSummonPropertiesStore;
 extern DBCStorage <TalentEntry>                  sTalentStore;

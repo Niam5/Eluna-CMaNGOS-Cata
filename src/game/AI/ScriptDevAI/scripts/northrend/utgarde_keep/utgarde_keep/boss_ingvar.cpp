@@ -157,7 +157,7 @@ struct boss_ingvarAI : public ScriptedAI
         {
             DoScriptText(SAY_AGGRO_SECOND, m_creature);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            m_creature->UpdateEntry(pSpell->GetEffectMiscValue(EFFECT_INDEX_0));
+            m_creature->UpdateEntry(pSpell->EffectMiscValue[EFFECT_INDEX_0]);
             m_bIsResurrected = true;
             m_bIsFakingDeath = false;
         }

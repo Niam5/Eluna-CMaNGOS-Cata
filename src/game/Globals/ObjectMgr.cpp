@@ -2735,14 +2735,10 @@ void ObjectMgr::LoadItemRequiredTarget()
 
                     for (int j = 0; j < MAX_EFFECT_INDEX; ++j)
                     {
-                        SpellEffectEntry const* spellEffect = pSpellInfo->GetSpellEffect(SpellEffectIndex(j));
-                        if(!spellEffect)
-                            continue;
-
-                        if (spellEffect->EffectImplicitTargetA == TARGET_CHAIN_DAMAGE ||
-                            spellEffect->EffectImplicitTargetB == TARGET_CHAIN_DAMAGE ||
-                            spellEffect->EffectImplicitTargetA == TARGET_DUELVSPLAYER ||
-                            spellEffect->EffectImplicitTargetB == TARGET_DUELVSPLAYER)
+                        if (pSpellInfo->EffectImplicitTargetA[j] == TARGET_CHAIN_DAMAGE ||
+                                pSpellInfo->EffectImplicitTargetB[j] == TARGET_CHAIN_DAMAGE ||
+                                pSpellInfo->EffectImplicitTargetA[j] == TARGET_DUELVSPLAYER ||
+                                pSpellInfo->EffectImplicitTargetB[j] == TARGET_DUELVSPLAYER)
                         {
                             bIsItemSpellValid = true;
                             break;
@@ -4119,12 +4115,8 @@ void ObjectMgr::LoadQuests()
                     bool found = false;
                     for (int k = 0; k < MAX_EFFECT_INDEX; ++k)
                     {
-                        SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(SpellEffectIndex(k));
-                        if(!spellEffect)
-                            continue;
-
-                        if ((spellEffect->Effect == SPELL_EFFECT_QUEST_COMPLETE && uint32(spellEffect->EffectMiscValue) == qinfo->QuestId) ||
-                            spellEffect->Effect == SPELL_EFFECT_SEND_EVENT)
+                        if ((spellInfo->Effect[k] == SPELL_EFFECT_QUEST_COMPLETE && uint32(spellInfo->EffectMiscValue[k]) == qinfo->QuestId) ||
+                                spellInfo->Effect[k] == SPELL_EFFECT_SEND_EVENT)
                         {
                             found = true;
                             break;
@@ -4539,13 +4531,10 @@ void ObjectMgr::LoadQuests()
 
         for (int j = 0; j < MAX_EFFECT_INDEX; ++j)
         {
-            SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(SpellEffectIndex(j));
-            if(!spellEffect)
-                continue;
-            if (spellEffect->Effect != SPELL_EFFECT_QUEST_COMPLETE)
+            if (spellInfo->Effect[j] != SPELL_EFFECT_QUEST_COMPLETE)
                 continue;
 
-            uint32 quest_id = spellEffect->EffectMiscValue;
+            uint32 quest_id = spellInfo->EffectMiscValue[j];
 
             Quest const* quest = GetQuestTemplate(quest_id);
 
@@ -7405,13 +7394,18 @@ void ObjectMgr::LoadSpellTemplate()
         }
     }
 
-    sSpellAuraOptionsStore.Load();
-    sLog.outString(">> Loaded %u spell_aura_option records", sSpellAuraOptionsStore.GetRecordCount());
-    sLog.outString();
+    for (uint32 i = 1; i < sSpellTemplate.GetMaxEntry(); ++i)
+    {
+        SpellEntry const* spell = sSpellTemplate.LookupEntry<SpellEntry>(i);
+        if (!spell)
+            continue;
 
-    sSpellEffectStore.Load();
-    sLog.outString(">> Loaded %u spell_effect records", sSpellEffectStore.GetRecordCount());
-    sLog.outString();
+        // DBC not support uint64 fields but SpellEntry have SpellFamilyFlags mapped at 2 uint32 fields
+        // uint32 field already converted to bigendian if need, but must be swapped for correct uint64 bigendian view
+#if MANGOS_ENDIAN == MANGOS_BIG_ENDIAN
+        std::swap(*((uint32*)(&spell->SpellFamilyFlags)), *(((uint32*)(&spell->SpellFamilyFlags)) + 1));
+#endif
+    }
 }
 
 void ObjectMgr::LoadDungeonEncounters()
@@ -9332,23 +9326,15 @@ void ObjectMgr::LoadTrainers(char const* tableName, bool isTemplates)
         trainerSpell.learnedSpell = spell;
         for (int i = 0; i < MAX_EFFECT_INDEX; ++i)
         {
-            SpellEffectEntry const* spellEffect = spellinfo->GetSpellEffect(SpellEffectIndex(i));
-            if (!spellEffect)
-                continue;
-
-            if (spellEffect->Effect == SPELL_EFFECT_LEARN_SPELL &&
-                SpellMgr::IsProfessionOrRidingSpell(spellEffect->EffectTriggerSpell))
+            if (spellinfo->Effect[i] == SPELL_EFFECT_LEARN_SPELL &&
+                SpellMgr::IsProfessionOrRidingSpell(spellinfo->EffectTriggerSpell[i]))
             {
                 // prof spells sometime only additions to main spell learn that have level data
                 for (int j = 0; j < MAX_EFFECT_INDEX; ++j)
                 {
-                    SpellEffectEntry const* spellEff = spellinfo->GetSpellEffect(SpellEffectIndex(j));
-                    if (!spellEff)
-                        continue;
-
-                    if (spellEff->Effect == SPELL_EFFECT_LEARN_SPELL)
+                    if (spellinfo->Effect[j] == SPELL_EFFECT_LEARN_SPELL)
                     {
-                        trainerSpell.learnedSpell = spellEff->EffectTriggerSpell;
+                        trainerSpell.learnedSpell = spellinfo->EffectTriggerSpell[j];
                         break;
                     }
                 }
@@ -9378,11 +9364,11 @@ void ObjectMgr::LoadTrainers(char const* tableName, bool isTemplates)
         {
             if (trainerSpell.reqLevel)
             {
-                if (trainerSpell.reqLevel == learnSpellinfo->GetSpellLevel())
+                if (trainerSpell.reqLevel == learnSpellinfo->SpellLevel)
                     ERROR_DB_STRICT_LOG("Table `%s` (Entry: %u) has redundant reqlevel %u (=spell level) for spell %u", tableName, entry, trainerSpell.reqLevel, spell);
             }
             else
-                trainerSpell.reqLevel = learnSpellinfo->GetSpellLevel();
+                trainerSpell.reqLevel = learnSpellinfo->SpellLevel;
         }
 
         if (trainerSpell.conditionId)

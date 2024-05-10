@@ -253,10 +253,7 @@ uint32 PlayerbotAI::getSpellId(const char* args, bool master) const
             continue;
 
         bool isExactMatch = (name.length() == wnamepart.length()) ? true : false;
-        SpellReagentsEntry const* spellReagents = pSpellInfo->GetSpellReagents();
-        if (!spellReagents)
-            continue;
-        bool usesNoReagents = (spellReagents->Reagent[0] <= 0) ? true : false;
+        bool usesNoReagents = (pSpellInfo->Reagent[0] <= 0) ? true : false;
 
         // if we already found a spell
         bool useThisSpell = true;
@@ -319,10 +316,7 @@ uint32 PlayerbotAI::getPetSpellId(const char* args) const
             continue;
 
         bool isExactMatch = (name.length() == wnamepart.length()) ? true : false;
-        SpellReagentsEntry const* spellReagents = pSpellInfo->GetSpellReagents();
-        if (!spellReagents)
-            continue;
-        bool usesNoReagents = (spellReagents->Reagent[0] <= 0) ? true : false;
+        bool usesNoReagents = (pSpellInfo->Reagent[0] <= 0) ? true : false;
 
         // if we already found a spell
         bool useThisSpell = true;
@@ -1837,7 +1831,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
                     }
                 case SPELL_FAILED_REQUIRES_SPELL_FOCUS: // 102
                     {
-                        switch (spellInfo->GetRequiresSpellFocus()) // SpellFocusObject.dbc id
+                        switch (spellInfo->RequiresSpellFocus)
                         {
                         case 1:  // need an anvil
                             out << "|cffff0000I require an anvil.";
@@ -1852,7 +1846,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
                             out << "|cffff0000I require a cooking fire.";
                             break;
                         default:
-                            out << "|cffff0000I Require Spell Focus on " << spellInfo->GetRequiresSpellFocus();
+                            out << "|cffff0000I Require Spell Focus on " << spellInfo->RequiresSpellFocus;
                         }
                         break;
                     }
@@ -1937,8 +1931,8 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
                 {
                     int32 master_speed1 = 0;
                     int32 master_speed2 = 0;
-                    master_speed1 = GetMaster()->GetAurasByType(SPELL_AURA_MOUNTED).front()->GetSpellProto()->GetSpellEffect(SpellEffectIndex(1))->EffectBasePoints;
-                    master_speed2 = GetMaster()->GetAurasByType(SPELL_AURA_MOUNTED).front()->GetSpellProto()->GetSpellEffect(SpellEffectIndex(2))->EffectBasePoints;
+                    master_speed1 = GetMaster()->GetAurasByType(SPELL_AURA_MOUNTED).front()->GetSpellProto()->EffectBasePoints[EFFECT_INDEX_1];
+                    master_speed2 = GetMaster()->GetAurasByType(SPELL_AURA_MOUNTED).front()->GetSpellProto()->EffectBasePoints[EFFECT_INDEX_2];
 
                     //Bot Part
                     uint32 spellMount = 0;
@@ -1951,40 +1945,31 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
                         if (!pSpellInfo)
                             continue;
 
-                        SpellEffectEntry const* spellEffect0 = pSpellInfo->GetSpellEffect(SpellEffectIndex(0));
-                        SpellEffectEntry const* spellEffect1 = pSpellInfo->GetSpellEffect(SpellEffectIndex(1));
-                        SpellEffectEntry const* spellEffect2 = pSpellInfo->GetSpellEffect(SpellEffectIndex(2));
-                        if (!spellEffect0)
-                            continue;
-
-                        if (spellEffect0->EffectApplyAuraName == SPELL_AURA_MOUNTED)
+                        if (pSpellInfo->EffectApplyAuraName[EFFECT_INDEX_0] == SPELL_AURA_MOUNTED)
                         {
-                            if (!spellEffect1)
-                                continue;
-
-                            if (spellEffect1->EffectApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
+                            if (pSpellInfo->EffectApplyAuraName[EFFECT_INDEX_1] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
                             {
-                                if (spellEffect1->EffectBasePoints == master_speed1)
+                                if (pSpellInfo->EffectBasePoints[EFFECT_INDEX_1] == master_speed1)
                                 {
                                     spellMount = spellId;
                                     break;
                                 }
                             }
-                            else if (spellEffect2 && ((spellEffect1->EffectApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
-                                && (spellEffect2->EffectApplyAuraName == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED)))
+                            else if ((pSpellInfo->EffectApplyAuraName[EFFECT_INDEX_1] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
+                                && (pSpellInfo->EffectApplyAuraName[EFFECT_INDEX_2] == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED))
                             {
-                                if ((spellEffect1->EffectBasePoints == master_speed1)
-                                    && (spellEffect2->EffectBasePoints == master_speed2))
+                                if ((pSpellInfo->EffectBasePoints[EFFECT_INDEX_1] == master_speed1)
+                                    && (pSpellInfo->EffectBasePoints[EFFECT_INDEX_2] == master_speed2))
                                 {
                                     spellMount = spellId;
                                     break;
                                 }
                             }
-                            else if (spellEffect2 && ((spellEffect2->EffectApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
-                                && (spellEffect1->EffectApplyAuraName == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED)))
+                            else if ((pSpellInfo->EffectApplyAuraName[EFFECT_INDEX_2] == SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED)
+                                && (pSpellInfo->EffectApplyAuraName[EFFECT_INDEX_1] == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED))
                             {
-                                if ((spellEffect2->EffectBasePoints == master_speed2)
-                                    && (spellEffect1->EffectBasePoints == master_speed1))
+                                if ((pSpellInfo->EffectBasePoints[EFFECT_INDEX_2] == master_speed2)
+                                    && (pSpellInfo->EffectBasePoints[EFFECT_INDEX_1] == master_speed1))
                                 {
                                     spellMount = spellId;
                                     break;
@@ -2312,7 +2297,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             if (!pSpellInfo)
                 return;
 
-            if (pSpellInfo->GetAuraInterruptFlags() & AURA_INTERRUPT_FLAG_NOT_SEATED)
+            if (pSpellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED)
                 return;
 
             SetIgnoreUpdateTime((msTime / 1000) + 1);
@@ -4243,7 +4228,7 @@ bool PlayerbotAI::IsRegenerating()
         SpellEntry const* spell = aura->second->GetSpellProto();
         if (!spell)
             continue;
-        if (spell->GetCategory() == 59 || spell->GetCategory() == 11){
+        if (spell->Category == 59 || spell->Category == 11){
             return true;
         }
     }
@@ -5355,17 +5340,13 @@ bool PlayerbotAI::CastSpell(uint32 spellId)
 
     uint32 target_type = TARGET_FLAG_UNIT;
 
-    SpellEffectEntry const* spellEffect = pSpellInfo->GetSpellEffect(SpellEffectIndex(0));
-    if (!spellEffect)
-        return false;
-
-    if (spellEffect->Effect == SPELL_EFFECT_OPEN_LOCK)
+    if (pSpellInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_OPEN_LOCK)
         target_type = TARGET_FLAG_OBJECT;
 
     m_CurrentlyCastingSpellId = spellId;
 
-    if (spellEffect->Effect == SPELL_EFFECT_OPEN_LOCK ||
-        spellEffect->Effect == SPELL_EFFECT_SKINNING)
+    if (pSpellInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_OPEN_LOCK ||
+        pSpellInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_SKINNING)
     {
         if (m_lootCurrent)
         {
@@ -5520,11 +5501,7 @@ bool PlayerbotAI::Buff(uint32 spellId, Unit* target, void (*beforeCast)(Player *
     //DEBUG_LOG("...willBenefit: %d (start)", willBenefitFromSpell);
     for (uint8 i = 0; i < MAX_EFFECT_INDEX && !willBenefitFromSpell; ++i)
     {
-        SpellEffectEntry const* spellEffect = spellProto->GetSpellEffect(SpellEffectIndex(i));
-        if (!spellEffect)
-            return false;
-
-        if (spellEffect->EffectApplyAuraName == SPELL_AURA_NONE)
+        if (spellProto->EffectApplyAuraName[i] == SPELL_AURA_NONE)
         {
             //DEBUG_LOG("...Effect%d NONE", i);
             break;
@@ -5532,11 +5509,11 @@ bool PlayerbotAI::Buff(uint32 spellId, Unit* target, void (*beforeCast)(Player *
         //DEBUG_LOG("...Effect%d exists", i);
 
         int32 bonus = m_bot->CalculateSpellDamage(target, spellProto, SpellEffectIndex(i));
-        Unit::AuraList const& auras = target->GetAurasByType(AuraType(spellEffect->EffectApplyAuraName));
+        Unit::AuraList const& auras = target->GetAurasByType(AuraType(spellProto->EffectApplyAuraName[i]));
         for (Unit::AuraList::const_iterator it = auras.begin(); it != auras.end() && !willBenefitFromSpell; ++it)
         {
             //DEBUG_LOG("...m_amount (%d) vs bonus (%d)", (*it)->GetModifier()->m_amount, bonus);
-            if ((*it)->GetModifier()->m_miscvalue == spellEffect->EffectMiscValue)
+            if ((*it)->GetModifier()->m_miscvalue == spellProto->EffectMiscValue[i])
             {
                 hasComparableAura = true;
                 //DEBUG_LOG("...hasComparableAura");
@@ -5827,15 +5804,11 @@ bool PlayerbotAI::HasSpellReagents(uint32 spellId)
 
     for (uint32 i = 0; i < MAX_SPELL_REAGENTS; ++i)
     {
-        SpellReagentsEntry const* spellReagents = pSpellInfo->GetSpellReagents();
-        if (!spellReagents)
+        if (pSpellInfo->Reagent[i] <= 0)
             continue;
 
-        if (spellReagents->Reagent[i] <= 0)
-            continue;
-
-        uint32 itemid = spellReagents->Reagent[i];
-        uint32 count = spellReagents->ReagentCount[i];
+        uint32 itemid = pSpellInfo->Reagent[i];
+        uint32 count = pSpellInfo->ReagentCount[i];
 
         if (!m_bot->HasItemCount(itemid, count))
             return false;
@@ -5857,16 +5830,12 @@ uint32 PlayerbotAI::GetSpellCharges(uint32 spellId)
     std::list<uint32> chargeList;
     for (uint32 i = 0; i < MAX_SPELL_REAGENTS; ++i)
     {
-        SpellReagentsEntry const* spellReagents = pSpellInfo->GetSpellReagents();
-        if (!spellReagents)
-            continue;
-
-        if (spellReagents->Reagent[i] <= 0)
+        if (pSpellInfo->Reagent[i] <= 0)
             continue;
 
         uint32 totalcount = 0;
-        uint32 itemid = spellReagents->Reagent[i];
-        uint32 count = spellReagents->ReagentCount[i];
+        uint32 itemid = pSpellInfo->Reagent[i];
+        uint32 count = pSpellInfo->ReagentCount[i];
         ItemCountInInv(itemid, totalcount);
         chargeList.push_back((totalcount / count));
     }
@@ -10437,11 +10406,7 @@ void PlayerbotAI::_HandleCommandEnchant(std::string &text, Player &fromPlayer)
                     if (!spellInfo)
                         continue;
 
-                    SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(SpellEffectIndex(0));
-                    if (!spellEffect)
-                        return;
-
-                    if (IsPrimaryProfessionSkill(*it) && spellEffect->Effect != SPELL_EFFECT_ENCHANT_ITEM)
+                    if (IsPrimaryProfessionSkill(*it) && spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_ENCHANT_ITEM)
                         continue;
 
                     if (SkillAbility->skillId == *it && m_bot->HasSpell(SkillAbility->spellId) && SkillAbility->forward_spellid == 0 && ((SkillAbility->classmask & m_bot->getClassMask()) == 0))
@@ -10644,11 +10609,7 @@ void PlayerbotAI::_HandleCommandCraft(std::string &text, Player &fromPlayer)
                 if (!spellInfo)
                     continue;
 
-                SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(SpellEffectIndex(0));
-                if (!spellEffect)
-                    return;
-
-                if (IsPrimaryProfessionSkill(*it) && spellEffect->Effect != SPELL_EFFECT_CREATE_ITEM)
+                if (IsPrimaryProfessionSkill(*it) && spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_CREATE_ITEM)
                     continue;
 
                 if (SkillAbility->skillId == *it && m_bot->HasSpell(SkillAbility->spellId) && SkillAbility->forward_spellid == 0 && ((SkillAbility->classmask & m_bot->getClassMask()) == 0))
@@ -11508,11 +11469,7 @@ void PlayerbotAI::_HandleCommandSkill(std::string &text, Player &fromPlayer)
                     if (!spellInfo)
                         continue;
 
-                    SpellEffectEntry const* spellEffect = spellInfo->GetSpellEffect(SpellEffectIndex(0));
-                    if (!spellEffect)
-                        return;
-
-                    if (skillLine->skillId == *it && spellEffect->Effect == SPELL_EFFECT_WEAPON)
+                    if (skillLine->skillId == *it && spellInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_WEAPON)
                         MakeWeaponSkillLink(spellInfo, msg, *it);
                 }
         }

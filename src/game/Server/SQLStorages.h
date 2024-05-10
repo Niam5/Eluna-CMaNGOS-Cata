@@ -33,8 +33,6 @@ extern SQLStorage sWorldTemplate;
 extern SQLStorage sConditionStorage;
 extern SQLStorage sDungeonEncounterStore;
 extern SQLStorage sAreaGroupStore;
-extern SQLStorage sSpellAuraOptionsStore;
-extern SQLStorage sSpellEffectStore;
 extern SQLStorage sSpellTemplate;
 
 extern SQLHashStorage sGOStorage;

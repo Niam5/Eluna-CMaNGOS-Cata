@@ -226,7 +226,7 @@ struct boss_attumenAI : public ScriptedAI
 
     void SpellHit(Unit* /*pSource*/, const SpellEntry* pSpell) override
     {
-        if (pSpell->GetMechanic() == MECHANIC_DISARM)
+        if (pSpell->Mechanic == MECHANIC_DISARM)
             DoScriptText(SAY_DISARMED, m_creature);
     }
 
