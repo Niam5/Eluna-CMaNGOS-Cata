@@ -91,6 +91,8 @@ else()
   message(STATUS "Build documentation   : No  (default)")
 endif()
 
+message(STATUS "Target directory for dev binaries(DEV_BINARY_DIR) = ${DEV_BINARY_DIR}")
+
 # if(SQL)
 #   message(STATUS "Install SQL-files     : Yes")
 # else()
