@@ -77,7 +77,7 @@ endforeach()
 add_definitions(-DBUILD_ELUNA -DCMANGOS -DCATA)
 endif()
 
-if(NOT BUILD_PLAYERBOT)
+if(NOT BUILD_DEPRECATED_PLAYERBOT)
   # exclude Playerbot folder
   set (EXCLUDE_DIR "PlayerBot/")
   foreach (TMP_PATH ${LIBRARY_SRCS})
@@ -169,9 +169,9 @@ if (BUILD_METRICS)
   add_definitions(-DBUILD_METRICS)
 endif()
 
-# Define BUILD_PLAYERBOT if need
-if (BUILD_PLAYERBOT)
-  add_definitions(-DBUILD_PLAYERBOT)
+# Define BUILD_DEPRECATED_PLAYERBOT if need
+if (BUILD_DEPRECATED_PLAYERBOT)
+  add_definitions(-DBUILD_DEPRECATED_PLAYERBOT)
 endif()
 
 if (MSVC)

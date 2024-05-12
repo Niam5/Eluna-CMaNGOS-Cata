@@ -32,7 +32,7 @@
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"
 #endif
-#ifdef BUILD_PLAYERBOT
+#ifdef BUILD_DEPRECATED_PLAYERBOT
 	#include "PlayerBot/Base/PlayerbotMgr.h"
 	#include "Config/Config.h"
 	extern Config botConfig;
@@ -364,7 +364,7 @@ bool Group::AddMember(ObjectGuid guid, const char* name)
 
 uint32 Group::RemoveMember(ObjectGuid guid, uint8 method)
 {
-#ifdef BUILD_PLAYERBOT
+#ifdef BUILD_DEPRECATED_PLAYERBOT
     // if master leaves group, all bots leave group
     if (!botConfig.GetBoolDefault("PlayerbotAI.DisableBots", false))
     {
