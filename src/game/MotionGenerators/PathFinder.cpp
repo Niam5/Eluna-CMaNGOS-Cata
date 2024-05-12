@@ -597,7 +597,7 @@ void PathFinder::createFilter()
 
         // creatures don't take environmental damage
         if (creature->CanSwim())
-            includeFlags |= (NAV_WATER | NAV_MAGMA | NAV_SLIME);           // swim
+            includeFlags |= (NAV_WATER | NAV_MAGMA_SLIME);           // swim
     }
     else if (m_sourceUnit->GetTypeId() == TYPEID_PLAYER)
     {
@@ -626,7 +626,7 @@ void PathFinder::updateFilter()
     }
 }
 
-NavTerrain PathFinder::getNavTerrain(float x, float y, float z)
+NavTerrainFlag PathFinder::getNavTerrain(float x, float y, float z)
 {
     GridMapLiquidData data;
     if (m_sourceUnit->GetTerrain()->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data) == LIQUID_MAP_NO_WATER)
@@ -638,9 +638,8 @@ NavTerrain PathFinder::getNavTerrain(float x, float y, float z)
         case MAP_LIQUID_TYPE_OCEAN:
             return NAV_WATER;
         case MAP_LIQUID_TYPE_MAGMA:
-            return NAV_MAGMA;
         case MAP_LIQUID_TYPE_SLIME:
-            return NAV_SLIME;
+            return NAV_MAGMA_SLIME;
         default:
             return NAV_GROUND;
     }
