@@ -2242,7 +2242,7 @@ struct WorldObjectChangeAccumulator
         for (CameraMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
             Player* owner = iter->getSource()->GetOwner();
-            if (owner != &i_object && owner->HaveAtClient(&i_object))
+            if (owner != &i_object && owner->HasAtClient(&i_object))
                 i_object.BuildUpdateDataForPlayer(owner, i_updateDatas);
         }
     }
@@ -2589,6 +2589,16 @@ void WorldObject::PrintCooldownList(ChatHandler& chat) const
 
     chat.PSendSysMessage("Found %u cooldown%s.", cdCount, (cdCount > 1) ? "s" : "");
     chat.PSendSysMessage("Found %u permanent cooldown%s.", permCDCount, (permCDCount > 1) ? "s" : "");
+}
+
+void WorldObject::AddClientIAmAt(Player const* player)
+{
+    m_clientGUIDsIAmAt.insert(player->GetObjectGuid());
+}
+
+void WorldObject::RemoveClientIAmAt(Player const* player)
+{
+    m_clientGUIDsIAmAt.erase(player->GetObjectGuid());
 }
 
 #ifdef BUILD_ELUNA

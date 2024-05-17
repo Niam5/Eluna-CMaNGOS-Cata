@@ -867,6 +867,10 @@ class WorldObject : public Object
 
         virtual void InspectingLoot() {}
 
+        void AddClientIAmAt(Player const* player);
+        void RemoveClientIAmAt(Player const* player);
+        GuidSet& GetClientGuidsIAmAt() { return m_clientGUIDsIAmAt; }
+
 #ifdef BUILD_ELUNA
         ElunaEventProcessor* elunaEvents;
 
@@ -910,6 +914,8 @@ class WorldObject : public Object
         ViewPoint m_viewPoint;
         WorldUpdateCounter m_updateTracker;
         bool m_isActiveObject;
+
+        GuidSet m_clientGUIDsIAmAt;
 };
 
 #endif

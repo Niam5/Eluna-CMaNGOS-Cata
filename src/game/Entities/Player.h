@@ -2306,9 +2306,10 @@ class Player : public Unit
         Object* GetObjectByTypeMask(ObjectGuid guid, TypeMask typemask);
 
         // currently visible objects at player client
-        GuidSet m_clientGUIDs;
-
-        bool HaveAtClient(WorldObject const* u) { return u == this || m_clientGUIDs.find(u->GetObjectGuid()) != m_clientGUIDs.end(); }
+        bool HasAtClient(WorldObject const* u) { return u == this || m_clientGUIDs.find(u->GetObjectGuid()) != m_clientGUIDs.end(); }
+        void AddAtClient(WorldObject* target);
+        void RemoveAtClient(WorldObject* target);
+        GuidSet& GetClientGuids() { return m_clientGUIDs; }
 
         bool IsVisibleInGridForPlayer(Player* pl) const override;
         bool IsVisibleGloballyFor(Player* pl) const;
@@ -2815,6 +2816,8 @@ class Player : public Unit
         uint32 m_cachedGS;
 
         bool m_isGhouled;
+
+        GuidSet m_clientGUIDs;
 
         std::unordered_map<uint32, TimePoint> m_enteredInstances;
         uint32 m_createdInstanceClearTimer;
