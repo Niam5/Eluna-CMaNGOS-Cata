@@ -1,3 +1,0 @@
-ALTER TABLE realmd_db_version CHANGE COLUMN required_c12484_02_realmd_account_access required_c0001_01_realmd_account_drop_sha bit;
-
-ALTER TABLE account DROP COLUMN sha_pass_hash;
