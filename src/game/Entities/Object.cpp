@@ -1180,7 +1180,7 @@ void Object::ForceValuesUpdateAtIndex(uint32 index)
 
 WorldObject::WorldObject() :
 #ifdef BUILD_ELUNA
-    elunaEvents(NULL),
+    elunaEvents(nullptr),
 #endif
     m_transportInfo(nullptr), m_isOnEventNotified(false),
     m_currMap(nullptr), m_mapId(0),
@@ -1192,7 +1192,7 @@ WorldObject::WorldObject() :
 WorldObject::~WorldObject()
 {
     delete elunaEvents;
-    elunaEvents = NULL;
+    elunaEvents = nullptr;
 }
 #endif
 
@@ -1204,7 +1204,8 @@ void WorldObject::CleanupsBeforeDelete()
 #ifdef BUILD_ELUNA
 void WorldObject::Update(uint32 update_diff, uint32 /*time_diff*/)
 {
-    elunaEvents->Update(update_diff);
+    if (elunaEvents)
+        elunaEvents->Update(update_diff);
 }
 #endif
 
@@ -1835,31 +1836,7 @@ void WorldObject::SetMap(Map* map)
     // lets save current map's Id/instanceId
     m_mapId = map->GetId();
     m_InstanceId = map->GetInstanceId();
-#ifdef BUILD_ELUNA
-    //@todo: possibly look into cleanly clearing all pending events from previous map's event mgr.
-
-    // if multistate, delete elunaEvents and set to nullptr. events shouldn't move across states.
-    // in single state, the timed events should move across maps
-    if (!sElunaConfig->IsElunaCompatibilityMode())
-    {
-        delete elunaEvents;
-        elunaEvents = nullptr; // set to null in case map doesn't use eluna
-    }
-
-    if (Eluna* e = map->GetEluna())
-        if (!elunaEvents)
-            elunaEvents = new ElunaEventProcessor(e, this);
-#endif
 }
-
-#ifdef BUILD_ELUNA
-void WorldObject::ResetMap()
-{
-    delete elunaEvents;
-    elunaEvents = NULL;
-    m_currMap = NULL;
-}
-#endif
 
 void WorldObject::AddToWorld()
 {
@@ -1867,12 +1844,28 @@ void WorldObject::AddToWorld()
         m_currMap->AddToOnEventNotified(this);
 
     Object::AddToWorld();
+
+#ifdef BUILD_ELUNA
+    if (Eluna* e = GetEluna())
+        if (!elunaEvents)
+            elunaEvents = new ElunaEventProcessor(e, this);
+#endif
 }
 
 void WorldObject::RemoveFromWorld()
 {
     if (m_isOnEventNotified)
         m_currMap->RemoveFromOnEventNotified(this);
+
+#ifdef BUILD_ELUNA
+    // if multistate, delete elunaEvents and set to nullptr. events shouldn't move across states.
+    // in single state, the timed events should move across maps
+    if (!sElunaConfig->IsElunaCompatibilityMode())
+    {
+        delete elunaEvents;
+        elunaEvents = nullptr; // set to null in case map doesn't use eluna
+    }
+#endif
 
     Object::RemoveFromWorld();
 }
