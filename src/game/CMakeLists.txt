@@ -74,7 +74,6 @@ foreach (TMP_PATH ${LIBRARY_SRCS})
         list(REMOVE_ITEM LIBRARY_SRCS ${TMP_PATH})
     endif ()
 endforeach()
-add_definitions(-DBUILD_ELUNA -DCMANGOS -DCATA)
 endif()
 
 if(NOT BUILD_DEPRECATED_PLAYERBOT)
@@ -118,7 +117,6 @@ target_link_libraries(${LIBRARY_NAME}
   PRIVATE g3dlite
   PRIVATE detour
   PRIVATE zlib
-  PRIVATE lualib
 )
 
 # include additionals headers
@@ -129,10 +127,6 @@ set(ADDITIONAL_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}/BattleGround
   ${CMAKE_CURRENT_SOURCE_DIR}/OutdoorPvP
   ${CMAKE_CURRENT_SOURCE_DIR}/PlayerBot
-  ${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine/
-  ${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine/methods/CMangos
-  ${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine/hooks
-  ${CMAKE_SOURCE_DIR}/dep/lualib
   ${CMAKE_BINARY_DIR}
 )
 
@@ -152,11 +146,6 @@ endif()
 # Define BUILD_SCRIPTDEV if need
 if (BUILD_SCRIPTDEV)
   add_definitions(-DBUILD_SCRIPTDEV)
-endif()
-
-# Define BUILD_ELUNA if need
-if (BUILD_ELUNA)
-  add_definitions(-DBUILD_ELUNA)
 endif()
 
 # Define BUILD_AHBOT if need

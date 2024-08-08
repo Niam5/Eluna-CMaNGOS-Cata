@@ -427,6 +427,21 @@ if(MSVC)
   endif()
 endif()
 
+if(BUILD_ELUNA)
+  set_property(TARGET game shared mangosd APPEND PROPERTY COMPILE_DEFINITIONS BUILD_ELUNA ELUNA_CMANGOS ELUNA_EXPANSION=3)
+  set_property(TARGET game mangosd APPEND PROPERTY INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/game/LuaEngine/hooks)
+  set_property(TARGET game APPEND PROPERTY INCLUDE_DIRECTORIES
+    ${CMAKE_SOURCE_DIR}/src/game/LuaEngine/
+    ${CMAKE_SOURCE_DIR}/src/game/LuaEngine/methods/CMangos
+    ${CMAKE_SOURCE_DIR}/dep/lualib
+    )
+  set_property(TARGET game APPEND PROPERTY LINK_LIBRARIES ${LIBRARY_NAME} PRIVATE lualib)
+  set_property(TARGET mangosd APPEND PROPERTY LINK_LIBRARIES ${EXECUTABLE_NAME} lualib)
+  if(BUILD_PLAYERBOTS)
+	set_property(TARGET playerbots APPEND PROPERTY COMPILE_DEFINITIONS BUILD_ELUNA ELUNA_CMANGOS ELUNA_EXPANSION=3)
+  endif()
+endif()
+
 # if(SQL)
 #   add_subdirectory(sql)
 # endif()
