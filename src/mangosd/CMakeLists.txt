@@ -60,7 +60,6 @@ target_link_libraries(${EXECUTABLE_NAME}
   shared
   game
   gsoap
-  lualib
 )
 
 if(WIN32)
@@ -143,10 +142,6 @@ endif()
 
 # Define BUILD_ELUNA if needed
 if (BUILD_ELUNA)
-  include_directories(
-  ${CMAKE_SOURCE_DIR}/src/game/LuaEngine/hooks
-  )
-  add_definitions(-DBUILD_ELUNA -DCATA -DCMANGOS)
   install(FILES ${CMAKE_SOURCE_DIR}/contrib/lua_scripts/masterscript.lua DESTINATION ${BIN_DIR}/lua_scripts)
   install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/game/LuaEngine/extensions DESTINATION ${BIN_DIR}/lua_scripts)
 endif()
