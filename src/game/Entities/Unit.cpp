@@ -641,7 +641,6 @@ Unit::~Unit()
 
     delete m_combatData;
     delete m_charmInfo;
-    delete m_vehicleInfo;
     delete movespline;
 
     // those should be already removed at "RemoveFromWorld()" call
@@ -5941,6 +5940,7 @@ void Unit::RemoveAura(Aura* Aur, AuraRemoveMode mode)
 
     // Set remove mode
     Aur->SetRemoveMode(mode);
+    Aur->InvalidateScriptRef();
 
     // some ShapeshiftBoosts at remove trigger removing other auras including parent Shapeshift aura
     // remove aura from list before to prevent deleting it before
@@ -12943,19 +12943,18 @@ void Unit::OnRelocated()
  */
 void Unit::SetVehicleId(uint32 entry, uint32 overwriteNpcEntry)
 {
-    delete m_vehicleInfo;
+    m_vehicleInfo = nullptr;
 
     if (entry)
     {
         VehicleEntry const* ventry = sVehicleStore.LookupEntry(entry);
         MANGOS_ASSERT(ventry != nullptr);
 
-        m_vehicleInfo = new VehicleInfo(this, ventry, overwriteNpcEntry);
+        m_vehicleInfo.reset(new VehicleInfo(this, ventry, overwriteNpcEntry));
         m_updateFlag |= UPDATEFLAG_VEHICLE;
     }
     else
     {
-        m_vehicleInfo = nullptr;
         m_updateFlag &= ~UPDATEFLAG_VEHICLE;
     }
 

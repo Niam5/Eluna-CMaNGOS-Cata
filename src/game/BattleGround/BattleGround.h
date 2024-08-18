@@ -398,7 +398,7 @@ class BattleGround
 
         /* Map pointers */
         void SetBgMap(BattleGroundMap* map) { m_Map = map; }
-        BattleGroundMap* GetBgMap()
+        BattleGroundMap* GetBgMap() const
         {
             MANGOS_ASSERT(m_Map);
             return m_Map;
@@ -560,6 +560,9 @@ class BattleGround
         // door-events are automaticly added - but _ALL_ other must be in this vector
         std::map<uint8, uint8> m_ActiveEvents;
 
+        MaNGOS::unique_weak_ptr<BattleGround> GetWeakPtr() const { return m_weakRef; }
+        void SetWeakPtr(MaNGOS::unique_weak_ptr<BattleGround> weakRef) { m_weakRef = std::move(weakRef); }
+
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround
         void EndNow();
@@ -641,6 +644,8 @@ class BattleGround
         float m_TeamStartLocZ[PVP_TEAM_COUNT];
         float m_TeamStartLocO[PVP_TEAM_COUNT];
         float m_startMaxDist;
+
+        MaNGOS::unique_weak_ptr<BattleGround> m_weakRef;
 };
 
 // helper functions for world state list fill

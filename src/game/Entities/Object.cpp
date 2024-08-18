@@ -47,7 +47,7 @@
 #include "LuaEngine/ElunaEventMgr.h"
 #endif
 
-Object::Object(): m_updateFlag(0)
+Object::Object(): m_updateFlag(0), m_scriptRef(this, NoopObjectDeleter())
 {
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
@@ -57,7 +57,7 @@ Object::Object(): m_updateFlag(0)
 
     m_inWorld           = false;
     m_objectUpdated     = false;
-    loot              = nullptr;
+    loot                = nullptr;
 }
 
 Object::~Object()
@@ -78,6 +78,30 @@ Object::~Object()
     delete[] m_uint32Values;
 
     delete loot;
+}
+
+void Object::AddToWorld()
+{
+    if (m_inWorld)
+        return;
+
+    m_inWorld = true;
+
+    // synchronize values mirror with values array (changes will send in updatecreate opcode any way
+    ClearUpdateMask(false);                         // false - we can't have update data in update queue before adding to world
+
+    // Set new ref when adding to world (except if we already have one - also set in constructor to allow scripts to work in initialization phase)
+    // Changing the ref when adding/removing from world prevents accessing players on different maps (possibly from another thread)
+    if (!m_scriptRef)
+        m_scriptRef.reset(this, NoopObjectDeleter());
+}
+
+void Object::RemoveFromWorld()
+{
+    // if we remove from world then sending changes not required
+    ClearUpdateMask(true);
+    m_inWorld = false;
+    m_scriptRef = nullptr;
 }
 
 void Object::_InitValues()

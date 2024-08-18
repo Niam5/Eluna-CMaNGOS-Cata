@@ -240,10 +240,6 @@ BattleGround::BattleGround(): m_BuffChange(false), m_ArenaBuffSpawned(false), m_
 
 BattleGround::~BattleGround()
 {
-    // remove objects and creatures
-    // (this is done automatically in mapmanager update, when the instance is reset after the reset time)
-    sBattleGroundMgr.RemoveBattleGround(GetInstanceID(), GetTypeId());
-
     // skip template bgs as they were never added to visible bg list
     BattleGroundBracketId bracketId = GetBracketId();
     if (bracketId != BG_BRACKET_ID_TEMPLATE)

@@ -163,9 +163,6 @@ ObjectMgr::ObjectMgr() :
 
 ObjectMgr::~ObjectMgr()
 {
-    for (QuestMap::iterator i = mQuestTemplates.begin(); i != mQuestTemplates.end(); ++i)
-        delete i->second;
-
     for (PetLevelInfoMap::iterator i = petInfo.begin(); i != petInfo.end(); ++i)
         delete[] i->second;
 
@@ -3734,9 +3731,6 @@ void ObjectMgr::LoadGroups()
 void ObjectMgr::LoadQuests()
 {
     // For reload case
-    for (QuestMap::const_iterator itr = mQuestTemplates.begin(); itr != mQuestTemplates.end(); ++itr)
-        delete itr->second;
-
     mQuestTemplates.clear();
 
     m_ExclusiveQuestGroups.clear();
@@ -3813,7 +3807,8 @@ void ObjectMgr::LoadQuests()
         Field* fields = result->Fetch();
 
         Quest* newQuest = new Quest(fields);
-        mQuestTemplates[newQuest->GetQuestId()] = newQuest;
+        auto itr = mQuestTemplates.try_emplace(newQuest->GetQuestId(), newQuest).first;
+        newQuest->m_weakRef = itr->second;
     }
     while (result->NextRow());
 
@@ -3825,7 +3820,7 @@ void ObjectMgr::LoadQuests()
 
     for (QuestMap::iterator iter = mQuestTemplates.begin(); iter != mQuestTemplates.end(); ++iter)
     {
-        Quest* qinfo = iter->second;
+        Quest* qinfo = iter->second.get();
 
         // additional quest integrity checks (GO, creature_template and item_template must be loaded already)
 

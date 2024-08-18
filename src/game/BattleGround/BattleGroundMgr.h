@@ -23,11 +23,12 @@
 #include "Utilities/EventProcessor.h"
 #include "Globals/SharedDefines.h"
 #include "Server/DBCEnums.h"
+#include "Util/UniqueTrackablePtr.h"
 #include "BattleGround.h"
 
 #include <mutex>
 
-typedef std::map<uint32, BattleGround*> BattleGroundSet;
+typedef std::map<uint32, MaNGOS::unique_trackable_ptr<BattleGround>> BattleGroundSet;
 
 // this container can't be deque, because deque doesn't like removing the last element - if you remove it, it invalidates next iterator and crash appears
 typedef std::list<BattleGround*> BGFreeSlotQueueType;
@@ -209,7 +210,7 @@ class BattleGroundMgr
 
         uint32 CreateBattleGround(BattleGroundTypeId bgTypeId, bool IsArena, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam, uint32 LevelMin, uint32 LevelMax, char const* BattleGroundName, uint32 MapID, float Team1StartLocX, float Team1StartLocY, float Team1StartLocZ, float Team1StartLocO, float Team2StartLocX, float Team2StartLocY, float Team2StartLocZ, float Team2StartLocO, float StartMaxDist);
 
-        void AddBattleGround(uint32 InstanceID, BattleGroundTypeId bgTypeId, BattleGround* BG) { m_BattleGrounds[bgTypeId][InstanceID] = BG; };
+        void AddBattleGround(uint32 InstanceID, BattleGroundTypeId bgTypeId, BattleGround* BG);
         void RemoveBattleGround(uint32 instanceID, BattleGroundTypeId bgTypeId) { m_BattleGrounds[bgTypeId].erase(instanceID); }
         uint32 CreateClientVisibleInstanceId(BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id);
         void DeleteClientVisibleInstanceId(BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id, uint32 clientInstanceID)

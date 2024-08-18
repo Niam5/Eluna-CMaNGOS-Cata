@@ -43,8 +43,7 @@ MapManager::MapManager()
 
 MapManager::~MapManager()
 {
-    for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
-        delete iter->second;
+    i_maps.clear();
 
     for (TransportSet::iterator i = m_Transports.begin(); i != m_Transports.end(); ++i)
         delete *i;
@@ -116,7 +115,9 @@ Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
         {
             m = new WorldMap(id, i_gridCleanUpDelay);
             // add map into container
-            i_maps[MapID(id)] = m;
+            MaNGOS::unique_trackable_ptr<Map>& ptr = i_maps[MapID(id)];
+            ptr.reset(m);
+            m->SetWeakPtr(ptr);
 
             // non-instanceable maps always expected have saved state
             m->CreateInstanceData(true);
@@ -149,7 +150,7 @@ Map* MapManager::FindMap(uint32 mapid, uint32 instanceId) const
         return nullptr;
     }
 
-    return iter->second;
+    return iter->second.get();
 }
 
 void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
@@ -159,13 +160,11 @@ void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
     MapMapType::iterator iter = i_maps.find(MapID(mapid, instanceId));
     if (iter != i_maps.end())
     {
-        Map* pMap = iter->second;
-        if (pMap->Instanceable())
+        if (iter->second->Instanceable())
         {
-            i_maps.erase(iter);
+            auto node = i_maps.extract(iter);
 
-            pMap->UnloadAll(true);
-            delete pMap;
+            node.mapped()->UnloadAll(true);
         }
     }
 }
@@ -189,14 +188,12 @@ void MapManager::Update(uint32 diff)
     MapMapType::iterator iter = i_maps.begin();
     while (iter != i_maps.end())
     {
-        Map* pMap = iter->second;
         // check if map can be unloaded
-        if (pMap->CanUnload((uint32)i_timer.GetCurrent()))
+        if (iter->second->CanUnload((uint32)i_timer.GetCurrent()))
         {
-            pMap->UnloadAll(true);
-            delete pMap;
+            auto node = i_maps.extract(iter++);
 
-            i_maps.erase(iter++);
+            node.mapped()->UnloadAll(true);
         }
         else
             ++iter;
@@ -233,11 +230,7 @@ void MapManager::UnloadAll()
     for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->UnloadAll(true);
 
-    while (!i_maps.empty())
-    {
-        delete i_maps.begin()->second;
-        i_maps.erase(i_maps.begin());
-    }
+    i_maps.clear();
 
     TerrainManager::Instance().UnloadAll();
 }
@@ -247,7 +240,7 @@ uint32 MapManager::GetNumInstances()
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
-        Map* map = itr->second;
+        Map* map = itr->second.get();
         if (!map->IsDungeon()) continue;
         ret += 1;
     }
@@ -259,7 +252,7 @@ uint32 MapManager::GetNumPlayersInInstances()
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
-        Map* map = itr->second;
+        Map* map = itr->second.get();
         if (!map->IsDungeon()) continue;
         ret += map->GetPlayers().getSize();
     }
@@ -305,7 +298,9 @@ Map* MapManager::CreateInstance(uint32 id, Player* player)
     // add a new map object into the registry
     if (pNewMap)
     {
-        i_maps[MapID(id, NewInstanceId)] = pNewMap;
+        MaNGOS::unique_trackable_ptr<Map>& ptr = i_maps[MapID(id, NewInstanceId)];
+        ptr.reset(pNewMap);
+        pNewMap->SetWeakPtr(ptr);
         map = pNewMap;
     }
 
@@ -355,7 +350,9 @@ BattleGroundMap* MapManager::CreateBattleGroundMap(uint32 id, uint32 InstanceId,
     bg->SetBgMap(map);
 
     // add map into map container
-    i_maps[MapID(id, InstanceId)] = map;
+    MaNGOS::unique_trackable_ptr<Map>& ptr = i_maps[MapID(id, InstanceId)];
+    ptr.reset(map);
+    map->SetWeakPtr(ptr);
 
     // BGs/Arenas not have saved instance data
     map->CreateInstanceData(false);

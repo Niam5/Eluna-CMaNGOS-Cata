@@ -39,6 +39,7 @@
 #include "Chat/Chat.h"
 #include "Weather/Weather.h"
 #include "Grids/ObjectGridLoader.h"
+#include "Util/UniqueTrackablePtr.h"
 
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"

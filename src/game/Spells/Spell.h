@@ -27,6 +27,7 @@
 #include "Entities/Unit.h"
 #include "Entities/Player.h"
 #include "Server/SQLStorages.h"
+#include "Util/UniqueTrackablePtr.h"
 
 class WorldSession;
 class WorldPacket;
@@ -301,6 +302,23 @@ private:
     size_t m_spellLogDataTargetsCounterPos;
     uint32 m_spellLogDataTargetsCounter;
     uint32 m_currentEffect;
+};
+
+class SpellEvent : public BasicEvent
+{
+public:
+    SpellEvent(Spell* spell);
+    virtual ~SpellEvent();
+
+    virtual bool Execute(uint64 e_time, uint32 p_time) override;
+    virtual void Abort(uint64 e_time) override;
+    virtual bool IsDeletable() const override;
+
+    Spell* GetSpell() const { return m_Spell.get(); }
+    MaNGOS::unique_weak_ptr<Spell> GetSpellWeakPtr() const { return m_Spell; }
+
+protected:
+    MaNGOS::unique_trackable_ptr<Spell> m_Spell;
 };
 
 class Spell
@@ -581,6 +599,8 @@ class Spell
 
         typedef std::list<Unit*> UnitList;
 
+        MaNGOS::unique_weak_ptr<Spell> GetWeakPtr() const;
+
     protected:
         void SendLoot(ObjectGuid guid, LootType loottype, LockType lockType);
         bool IgnoreItemRequirements() const;                // some item use spells have unexpected reagent data
@@ -754,6 +774,8 @@ class Spell
         // we can't store original aura link to prevent access to deleted auras
         // and in same time need aura data and after aura deleting.
         SpellEntry const* m_triggeredByAuraSpell;
+
+        SpellEvent* m_spellEvent;
 
     private:
         // NPC Summonings
@@ -997,16 +1019,4 @@ namespace MaNGOS
 
 typedef void(Spell::*pEffect)(SpellEffectEntry const* spellEffect);
 
-class SpellEvent : public BasicEvent
-{
-    public:
-        SpellEvent(Spell* spell);
-        virtual ~SpellEvent();
-
-        virtual bool Execute(uint64 e_time, uint32 p_time) override;
-        virtual void Abort(uint64 e_time) override;
-        virtual bool IsDeletable() const override;
-    protected:
-        Spell* m_Spell;
-};
 #endif

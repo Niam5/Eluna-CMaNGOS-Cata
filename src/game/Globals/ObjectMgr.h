@@ -33,6 +33,7 @@
 #include "Maps/MapPersistentStateMgr.h"
 #include "Globals/ObjectAccessor.h"
 #include "Entities/ObjectGuid.h"
+#include "Util/UniqueTrackablePtr.h"
 
 #include <map>
 #include <climits>
@@ -545,7 +546,7 @@ class ObjectMgr
 
         typedef std::unordered_map<uint32, ArenaTeam*> ArenaTeamMap;
 
-        typedef std::unordered_map<uint32, Quest*> QuestMap;
+        typedef std::unordered_map<uint32, MaNGOS::unique_trackable_ptr<Quest>> QuestMap;
 
         typedef std::unordered_map<uint32, AreaTrigger> AreaTriggerMap;
 
@@ -604,7 +605,7 @@ class ObjectMgr
         Quest const* GetQuestTemplate(uint32 quest_id) const
         {
             QuestMap::const_iterator itr = mQuestTemplates.find(quest_id);
-            return itr != mQuestTemplates.end() ? itr->second : nullptr;
+            return itr != mQuestTemplates.end() ? itr->second.get() : nullptr;
         }
         QuestMap const& GetQuestTemplates() const { return mQuestTemplates; }
 

@@ -21,6 +21,7 @@
 #include "Spells/SpellAuraDefines.h"
 #include "Server/DBCEnums.h"
 #include "Entities/ObjectGuid.h"
+#include "Util/UniqueTrackablePtr.h"
 
 /**
  * Used to modify what an Aura does to a player/npc.
@@ -487,6 +488,10 @@ class Aura
         bool IsLastAuraOnHolder();
 
         bool HasMechanic(uint32 mechanic) const;
+
+        MaNGOS::unique_weak_ptr<Aura> GetWeakPtr() const { return m_scriptRef; }
+        void InvalidateScriptRef() { m_scriptRef = nullptr; }
+
     protected:
         Aura(SpellEntry const* spellproto, SpellEffectIndex eff, int32* currentBasePoints, SpellAuraHolder* holder, Unit* target, Unit* caster = nullptr, Item* castItem = nullptr);
 
@@ -519,6 +524,9 @@ class Aura
         bool m_isPersistent: 1;
 
         SpellAuraHolder* const m_spellAuraHolder;
+
+        struct NoopAuraDeleter { void operator()(Aura*) const { /*noop - not managed*/ } };
+        MaNGOS::unique_trackable_ptr<Aura> m_scriptRef;
     private:
         void ReapplyAffectedPassiveAuras(Unit* target, bool owner_mode);
 };
