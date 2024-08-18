@@ -79,6 +79,8 @@ class VehicleInfo : public TransportBase
 
         void RemoveAccessoriesFromMap();                    ///< Unsummones accessory in case of far-teleport or death
 
+        MaNGOS::unique_weak_ptr<VehicleInfo> GetWeakPtr() const;
+
     private:
         // Internal use to calculate the boarding position
         void CalculateBoardingPositionOf(float gx, float gy, float gz, float go, float& lx, float& ly, float& lz, float& lo) const;

@@ -24,6 +24,7 @@
 #include "Policies/Singleton.h"
 #include "Maps/Map.h"
 #include "Grids/GridStates.h"
+#include "Util/UniqueTrackablePtr.h"
 
 class Transport;
 class BattleGround;
@@ -56,7 +57,7 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
         typedef MaNGOS::ClassLevelLockable<MapManager, std::recursive_mutex>::Lock Guard;
 
     public:
-        typedef std::map<MapID, Map* > MapMapType;
+        typedef std::map<MapID, MaNGOS::unique_trackable_ptr<Map> > MapMapType;
 
         Map* CreateMap(uint32, const WorldObject* obj);
         Map* CreateBgMap(uint32 mapid, BattleGround* bg);
@@ -137,7 +138,7 @@ class MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockab
         void DoForAllMaps(std::function<void(Map*)> worker)
         {
             for (MapMapType::const_iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
-                worker(itr->second);
+                worker(itr->second.get());
         }
 
     private:
@@ -172,7 +173,7 @@ inline void MapManager::DoForAllMapsWithMapId(uint32 mapId, Do& _do)
     MapMapType::const_iterator start = i_maps.lower_bound(MapID(mapId, 0));
     MapMapType::const_iterator end   = i_maps.lower_bound(MapID(mapId + 1, 0));
     for (MapMapType::const_iterator itr = start; itr != end; ++itr)
-        _do(itr->second);
+        _do(itr->second.get());
 }
 
 #define sMapMgr MapManager::Instance()

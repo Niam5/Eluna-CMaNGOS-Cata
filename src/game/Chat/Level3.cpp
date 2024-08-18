@@ -3645,7 +3645,7 @@ bool ChatHandler::HandleLookupQuestCommand(char* args)
     ObjectMgr::QuestMap const& qTemplates = sObjectMgr.GetQuestTemplates();
     for (ObjectMgr::QuestMap::const_iterator iter = qTemplates.begin(); iter != qTemplates.end(); ++iter)
     {
-        Quest* qinfo = iter->second;
+        Quest* qinfo = iter->second.get();
 
         std::string title;                                  // "" for avoid repeating check default locale
         sObjectMgr.GetQuestLocaleStrings(qinfo->GetQuestId(), loc_idx, &title);
@@ -3917,10 +3917,7 @@ bool ChatHandler::HandleGuildUninviteCommand(char* args)
         return false;
 
     if (targetGuild->DelMember(target_guid))
-    {
         targetGuild->Disband();
-        delete targetGuild;
-    }
 
     return true;
 }
@@ -3974,7 +3971,6 @@ bool ChatHandler::HandleGuildDeleteCommand(char* args)
         return false;
 
     targetGuild->Disband();
-    delete targetGuild;
 
     return true;
 }

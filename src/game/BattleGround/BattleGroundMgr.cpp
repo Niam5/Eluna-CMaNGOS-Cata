@@ -1149,7 +1149,7 @@ void BattleGroundMgr::DeleteAllBattleGrounds()
     {
         for (BattleGroundSet::iterator itr = m_BattleGrounds[i].begin(); itr != m_BattleGrounds[i].end();)
         {
-            BattleGround* bg = itr->second;
+            BattleGround* bg = itr->second.get();
             ++itr;                                          // step from invalidate iterator pos in result element remove in ~BattleGround call
             delete bg;
         }
@@ -1672,7 +1672,7 @@ BattleGround* BattleGroundMgr::GetBattleGroundThroughClientInstance(uint32 insta
     for (BattleGroundSet::iterator itr = m_BattleGrounds[bgTypeId].begin(); itr != m_BattleGrounds[bgTypeId].end(); ++itr)
     {
         if (itr->second->GetClientInstanceID() == instanceId)
-            return itr->second;
+            return itr->second.get();
     }
     return nullptr;
 }
@@ -1687,18 +1687,18 @@ BattleGround* BattleGroundMgr::GetBattleGround(uint32 InstanceID, BattleGroundTy
         {
             itr = m_BattleGrounds[i].find(InstanceID);
             if (itr != m_BattleGrounds[i].end())
-                return itr->second;
+                return itr->second.get();
         }
         return nullptr;
     }
     itr = m_BattleGrounds[bgTypeId].find(InstanceID);
-    return ((itr != m_BattleGrounds[bgTypeId].end()) ? itr->second : nullptr);
+    return ((itr != m_BattleGrounds[bgTypeId].end()) ? itr->second.get() : nullptr);
 }
 
 BattleGround* BattleGroundMgr::GetBattleGroundTemplate(BattleGroundTypeId bgTypeId)
 {
     // map is sorted and we can be sure that lowest instance id has only BG template
-    return m_BattleGrounds[bgTypeId].empty() ? nullptr : m_BattleGrounds[bgTypeId].begin()->second;
+    return m_BattleGrounds[bgTypeId].empty() ? nullptr : m_BattleGrounds[bgTypeId].begin()->second.get();
 }
 
 uint32 BattleGroundMgr::CreateClientVisibleInstanceId(BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id)
@@ -1856,6 +1856,13 @@ uint32 BattleGroundMgr::CreateBattleGround(BattleGroundTypeId bgTypeId, bool IsA
 
     // return some not-null value, bgTypeId is good enough for me
     return bgTypeId;
+}
+
+void BattleGroundMgr::AddBattleGround(uint32 instanceId, BattleGroundTypeId bgTypeId, BattleGround* bg)
+{
+    MaNGOS::unique_trackable_ptr<BattleGround>& ptr = m_BattleGrounds[bgTypeId][instanceId];
+    ptr.reset(bg);
+    bg->SetWeakPtr(ptr);
 }
 
 void BattleGroundMgr::CreateInitialBattleGrounds()

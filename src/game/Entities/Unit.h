@@ -1644,7 +1644,8 @@ class Unit : public WorldObject
         void Unmount(bool from_aura = false);
         MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
 
-        VehicleInfo* GetVehicleInfo() const { return m_vehicleInfo; }
+        VehicleInfo* GetVehicleInfo() const { return m_vehicleInfo.get(); }
+        MaNGOS::unique_weak_ptr<VehicleInfo> GetVehicleInfoWeakPtr() const { return m_vehicleInfo; }
         bool IsVehicle() const { return m_vehicleInfo != nullptr; }
         void SetVehicleId(uint32 entry, uint32 overwriteNpcEntry);
         Unit const* FindRootVehicle(const Unit* whichVehicle = nullptr) const;
@@ -2540,7 +2541,7 @@ class Unit : public WorldObject
         bool m_canParry;
         bool m_canBlock;
 
-        VehicleInfo* m_vehicleInfo;
+        MaNGOS::unique_trackable_ptr<VehicleInfo> m_vehicleInfo;
         void DisableSpline();
         bool m_isCreatureLinkingTrigger;
         bool m_isSpawningLinked;
