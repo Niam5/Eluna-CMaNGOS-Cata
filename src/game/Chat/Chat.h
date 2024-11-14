@@ -97,6 +97,7 @@ class ChatHandler
 
         bool ParseCommands(const char* text);
         ChatCommand const* FindCommand(char const* text);
+        void ExecuteCommand(const char* text);
 
         bool isValidChatMessage(const char* msg);
         bool HasSentErrorMessage() { return sentErrorMessage;}
@@ -148,7 +149,6 @@ class ChatHandler
         void SendGlobalSysMessage(const char* str);
 
         bool SetDataForCommandInTable(ChatCommand* table, const char* text, uint32 security, std::string const& help);
-        void ExecuteCommand(const char* text);
         void LogCommand(char const* fullcmd);
 
         bool ShowHelpForCommand(ChatCommand* table, const char* cmd);
