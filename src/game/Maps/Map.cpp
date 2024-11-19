@@ -56,9 +56,6 @@ Map::~Map()
     if (Eluna* e = GetEluna())
         if (Instanceable())
             e->FreeInstanceId(GetInstanceId());
-
-    delete eluna;
-    eluna = nullptr;
 #endif
     UnloadAll(true);
 
@@ -80,6 +77,11 @@ Map::~Map()
 
     delete m_weatherSystem;
     m_weatherSystem = nullptr;
+
+#ifdef BUILD_ELUNA
+    delete eluna;
+    eluna = nullptr;
+#endif
 }
 
 TimePoint Map::GetCurrentClockTime()
