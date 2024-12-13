@@ -335,6 +335,10 @@ class Map : public GridRefManager<NGridType>
 #endif
 
         TimePoint GetCurrentClockTime();
+
+        // debug
+        std::set<ObjectGuid> m_objRemoveList; // this will eventually eat up too much memory - only used for debugging VisibleNotifier::Notify() customlog leak
+
     private:
         void LoadMapAndVMap(int gx, int gy);
 
