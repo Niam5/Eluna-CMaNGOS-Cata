@@ -250,11 +250,11 @@ void WorldSession::HandlePetAction(WorldPacket& recv_data)
             if (!petUnit->IsSpellReady(*spellInfo))
                 return;
 
-            for (int i = 0; i < MAX_EFFECT_INDEX; ++i)
+            for (unsigned int i : spellInfo->EffectImplicitTargetA)
             {
-                if (spellInfo->EffectImplicitTargetA[i] == TARGET_ALL_ENEMY_IN_AREA
-                    || spellInfo->EffectImplicitTargetA[i] == TARGET_ALL_ENEMY_IN_AREA_INSTANT
-                    || spellInfo->EffectImplicitTargetA[i] == TARGET_ALL_ENEMY_IN_AREA_CHANNELED)
+                if (i == TARGET_ENUM_UNITS_ENEMY_AOE_AT_SRC_LOC
+                        || i == TARGET_ENUM_UNITS_ENEMY_AOE_AT_DEST_LOC
+                        || i == TARGET_ENUM_UNITS_ENEMY_AOE_AT_DYNOBJ_LOC)
                     return;
             }
 

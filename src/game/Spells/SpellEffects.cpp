@@ -2258,7 +2258,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                 case 47176:                                 // Infect Ice Troll
                 {
                     // Spell has wrong areaGroupid, so it can not be casted where expected.
-                    // TODO: research if spells casted by NPC, having TARGET_SCRIPT, can have disabled area check
+                    // TODO: research if spells casted by NPC, having TARGET_UNIT_SCRIPT_NEAR_CASTER, can have disabled area check
                     if (!unitTarget)
                         return;
 
@@ -4213,7 +4213,7 @@ void Spell::EffectForceCast(SpellEffectIndex effIndex)
 
     // forced cast spells by vehicle on master always unboard the master
     if (m_caster->IsVehicle() && m_caster->GetVehicleInfo()->HasOnBoard(unitTarget) &&
-        m_spellInfo->EffectImplicitTargetA[effIndex] == TARGET_MASTER)
+        m_spellInfo->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER_MASTER)
     {
         if (sSpellTemplate.LookupEntry<SpellEntry>(basePoints))
             m_caster->RemoveAurasDueToSpell(basePoints);
@@ -4402,7 +4402,7 @@ void Spell::EffectJump(SpellEffectIndex eff_idx)
     {
         m_targets.getDestination(x, y, z);
 
-        if(m_spellInfo->EffectImplicitTargetA[eff_idx] == TARGET_BEHIND_VICTIM)
+        if(m_spellInfo->EffectImplicitTargetA[eff_idx] == TARGET_LOCATION_UNIT_BACK)
         {
             // explicit cast data from client or server-side cast
             // some spell at client send caster
@@ -4480,7 +4480,7 @@ void Spell::EffectTeleportUnits(SpellEffectIndex eff_idx)   // TODO - Use target
 
     switch (targetType)
     {
-        case TARGET_INNKEEPER_COORDINATES:
+        case TARGET_LOCATION_CASTER_HOME_BIND:
         {
             // Only players can teleport to innkeeper
             if (unitTarget->GetTypeId() != TYPEID_PLAYER)
@@ -4489,8 +4489,8 @@ void Spell::EffectTeleportUnits(SpellEffectIndex eff_idx)   // TODO - Use target
             ((Player*)unitTarget)->TeleportToHomebind(unitTarget == m_caster ? TELE_TO_SPELL : 0);
             return;
         }
-        case TARGET_AREAEFFECT_INSTANT:                     // in all cases first TARGET_TABLE_X_Y_Z_COORDINATES
-        case TARGET_TABLE_X_Y_Z_COORDINATES:
+        case TARGET_ENUM_UNITS_SCRIPT_AOE_AT_SRC_LOC:                     // in all cases first TARGET_LOCATION_DATABASE
+        case TARGET_LOCATION_DATABASE:
         {
             SpellTargetPosition const* st = sSpellMgr.GetSpellTargetPosition(m_spellInfo->Id);
             if (!st)
@@ -4505,7 +4505,7 @@ void Spell::EffectTeleportUnits(SpellEffectIndex eff_idx)   // TODO - Use target
                 ((Player*)unitTarget)->TeleportTo(st->target_mapId, st->target_X, st->target_Y, st->target_Z, st->target_Orientation, unitTarget == m_caster ? TELE_TO_SPELL : 0);
             break;
         }
-        case TARGET_EFFECT_SELECT:
+        case TARGET_LOCATION_CASTER_DEST:
         {
             // m_destN filled, but sometimes for wrong dest and does not have TARGET_FLAG_DEST_LOCATION
 
@@ -4517,7 +4517,7 @@ void Spell::EffectTeleportUnits(SpellEffectIndex eff_idx)   // TODO - Use target
             m_caster->NearTeleportTo(x, y, z, orientation, unitTarget == m_caster);
             return;
         }
-        case TARGET_BEHIND_VICTIM:
+        case TARGET_LOCATION_UNIT_BACK:
         {
             Unit* pTarget = nullptr;
 
@@ -5610,7 +5610,7 @@ void Spell::EffectSummonType(SpellEffectIndex eff_idx)
         m_targets.getDestination(summonPositions[0].x, summonPositions[0].y, summonPositions[0].z);
     else
     {
-        if (m_spellInfo->EffectImplicitTargetA[eff_idx] == TARGET_EFFECT_SELECT || m_spellInfo->EffectImplicitTargetB[eff_idx] == TARGET_EFFECT_SELECT) // custom, done in SetTargetMap
+        if (m_spellInfo->EffectImplicitTargetA[eff_idx] == TARGET_LOCATION_CASTER_DEST || m_spellInfo->EffectImplicitTargetB[eff_idx] == TARGET_LOCATION_CASTER_DEST) // custom, done in SetTargetMap
             m_targets.getDestination(summonPositions[0].x, summonPositions[0].y, summonPositions[0].z);
         else
         {
@@ -8851,7 +8851,7 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     // Summon Your Inner Turmoil
                     m_caster->CastSpell(m_caster, 50167, TRIGGERED_OLD_TRIGGERED);
 
-                    // Spell 50218 has TARGET_SCRIPT, but other wild summons near may exist, and then target can become wrong
+                    // Spell 50218 has TARGET_UNIT_SCRIPT_NEAR_CASTER, but other wild summons near may exist, and then target can become wrong
                     // Only way to make this safe is to get the actual summoned by m_caster
 
                     // Your Inner Turmoil's Mirror Image Aura
@@ -12067,8 +12067,8 @@ void Spell::EffectBind(SpellEffectIndex eff_idx)
 
     uint32 area_id = uint32(m_spellInfo->EffectMiscValue[eff_idx]);
     WorldLocation loc;
-    if (m_spellInfo->EffectImplicitTargetA[eff_idx] == TARGET_TABLE_X_Y_Z_COORDINATES ||
-        m_spellInfo->EffectImplicitTargetB[eff_idx] == TARGET_TABLE_X_Y_Z_COORDINATES)
+    if (m_spellInfo->EffectImplicitTargetA[eff_idx] == TARGET_LOCATION_DATABASE ||
+        m_spellInfo->EffectImplicitTargetB[eff_idx] == TARGET_LOCATION_DATABASE)
     {
         SpellTargetPosition const* st = sSpellMgr.GetSpellTargetPosition(m_spellInfo->Id);
         if (!st)

@@ -593,7 +593,7 @@ Aura* CreateAura(SpellEntry const* spellproto, SpellEffectIndex eff, int32* curr
     {
         for (int i = 0; i < MAX_EFFECT_INDEX; ++i)
         {
-            if (triggeredSpellInfo->EffectImplicitTargetA[i] == TARGET_SINGLE_ENEMY)
+            if (triggeredSpellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_CHANNEL_TARGET)
                 return new SingleEnemyTargetAura(spellproto, eff, currentBasePoints, holder, target, caster, castItem);
         }
     }
@@ -4140,12 +4140,12 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
         {
             // look for other transform auras
             Aura* handledAura = *otherTransforms.begin();
-            for (Unit::AuraList::const_iterator i = otherTransforms.begin(); i != otherTransforms.end(); ++i)
+            for (auto otherTransform : otherTransforms)
             {
                 // negative auras are preferred
-                if (!IsPositiveSpell((*i)->GetSpellProto()->Id, (*i)->GetCaster(), target))
+                if (!otherTransform->IsPositive())
                 {
-                    handledAura = *i;
+                    handledAura = otherTransform;
                     break;
                 }
             }
