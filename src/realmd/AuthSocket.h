@@ -42,7 +42,7 @@ class AuthSocket : public MaNGOS::Socket
     public:
         const static int s_BYTE_SIZE = 32;
 
-        AuthSocket(boost::asio::io_service& service, std::function<void (Socket*)> closeHandler);
+        AuthSocket(boost::asio::io_context& context, std::function<void (Socket*)> closeHandler);
 
         bool Open() override;
 

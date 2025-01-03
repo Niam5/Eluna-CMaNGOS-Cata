@@ -91,7 +91,7 @@ namespace MaNGOS
             void ForceFlushOut();
 
         public:
-            Socket(boost::asio::io_service &service, std::function<void (Socket *)> closeHandler);
+            Socket(boost::asio::io_context &context, std::function<void (Socket *)> closeHandler);
             virtual ~Socket() = default;
 
             virtual bool Open();

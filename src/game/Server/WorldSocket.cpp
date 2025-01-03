@@ -85,8 +85,8 @@ struct ServerPktHeader
 #pragma pack(pop)
 #endif
 
-WorldSocket::WorldSocket(boost::asio::io_service &service, std::function<void (Socket *)> closeHandler)
-    : Socket(service, closeHandler), m_lastPingTime(std::chrono::system_clock::time_point::min()), m_overSpeedPings(0),
+WorldSocket::WorldSocket(boost::asio::io_context &context, std::function<void (Socket *)> closeHandler)
+    : Socket(context, closeHandler), m_lastPingTime(std::chrono::system_clock::time_point::min()), m_overSpeedPings(0),
       m_useExistingHeader(false), m_session(nullptr),m_seed(urand())
 {
     InitializeOpcodes();

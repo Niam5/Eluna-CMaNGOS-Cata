@@ -33,18 +33,18 @@ namespace MaNGOS
     class NetworkThread
     {
         private:
-            boost::asio::io_service m_service;
+            boost::asio::io_context m_context;
 
             std::mutex m_socketLock;
             std::unordered_set<std::shared_ptr<SocketType>> m_sockets;
 
             // note that the work member *must* be declared after the service member for the work constructor to function correctly
-            std::unique_ptr<boost::asio::io_service::work> m_work;
+            std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_work;
 
             std::thread m_serviceThread;
 
         public:
-            NetworkThread() : m_work(new boost::asio::io_service::work(m_service)), m_serviceThread([this] { boost::system::error_code ec; this->m_service.run(ec); })
+            NetworkThread() : m_work(std::make_unique<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(boost::asio::make_work_guard(m_context))), m_serviceThread([this] { boost::system::error_code ec; this->m_context.run(); })
             {
             }
 
@@ -61,7 +61,7 @@ namespace MaNGOS
                 }
 
                 // Allow io_service::run() to exit.
-                m_service.stop();
+                m_context.stop();
                 if (m_serviceThread.joinable())
                     m_serviceThread.join();
             }
@@ -82,7 +82,7 @@ namespace MaNGOS
     {
         std::lock_guard<std::mutex> guard(m_socketLock);
 
-        auto const i = m_sockets.emplace(std::make_shared<SocketType>(m_service, [this] (Socket *socket) { this->RemoveSocket(socket); }));
+        auto const i = m_sockets.emplace(std::make_shared<SocketType>(m_context, [this] (Socket *socket) { this->RemoveSocket(socket); }));
 
         MANGOS_ASSERT(i.second);
 

@@ -178,8 +178,8 @@ typedef struct AuthHandler
 std::array<uint8, 16> VersionChallenge = { { 0xBA, 0xA3, 0x1E, 0x99, 0xA0, 0x0B, 0x21, 0x57, 0xFC, 0x37, 0x3F, 0xB3, 0x69, 0xCD, 0xD2, 0xF1 } };
 
 /// Constructor - set the N and g values for SRP6
-AuthSocket::AuthSocket(boost::asio::io_service& service, std::function<void (Socket*)> closeHandler)
-    : Socket(service, std::move(closeHandler)), _status(STATUS_CHALLENGE), _build(0), _accountSecurityLevel(SEC_PLAYER), m_timeoutTimer(service)
+AuthSocket::AuthSocket(boost::asio::io_context& context, std::function<void (Socket*)> closeHandler)
+    : Socket(context, std::move(closeHandler)), _status(STATUS_CHALLENGE), _build(0), _accountSecurityLevel(SEC_PLAYER), m_timeoutTimer(context)
 {
 }
 

@@ -32,9 +32,9 @@
 
 namespace MaNGOS
 {
-    Socket::Socket(boost::asio::io_service& service, std::function<void (Socket*)> closeHandler)
-        : m_writeState(WriteState::Idle), m_readState(ReadState::Idle), m_socket(service),
-          m_closeHandler(std::move(closeHandler)), m_outBufferFlushTimer(service), m_address("0.0.0.0"),
+    Socket::Socket(boost::asio::io_context& context, std::function<void (Socket*)> closeHandler)
+        : m_writeState(WriteState::Idle), m_readState(ReadState::Idle), m_socket(context),
+          m_closeHandler(std::move(closeHandler)), m_outBufferFlushTimer(context), m_address("0.0.0.0"),
           m_remoteAddress(boost::asio::ip::address()), m_remotePort(0){}
 
     bool Socket::Open()

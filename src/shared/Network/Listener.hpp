@@ -33,7 +33,7 @@ namespace MaNGOS
     class Listener
     {
         private:
-            boost::asio::io_service m_service;
+            boost::asio::io_context m_context;
             boost::asio::ip::tcp::acceptor m_acceptor;
 
             std::thread m_acceptorThread;
@@ -71,7 +71,7 @@ namespace MaNGOS
 
     template <typename SocketType>
     Listener<SocketType>::Listener(std::string const& address, int port, int workerThreads)
-    : m_service(), m_acceptor(m_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(address), port))
+    : m_context(), m_acceptor(m_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(address), port))
     {
         m_workerThreads.reserve(workerThreads);
         for (auto i = 0; i < workerThreads; ++i)
@@ -79,7 +79,7 @@ namespace MaNGOS
 
         BeginAccept();
 
-        m_acceptorThread = std::thread([this]() { m_service.run(); });
+        m_acceptorThread = std::thread([this]() { m_context.run(); });
     }
 
     template <typename SocketType>
@@ -89,7 +89,7 @@ namespace MaNGOS
         // operation and should stop the acceptor thread. Note that closing
         // the acceptor needs to be done in the acceptor thread, because
         // using the m_acceptor object from multiple threads is unsafe!
-        m_service.post( [this]() { m_acceptor.close(); } );
+        boost::asio::post(m_context, [this]() { m_acceptor.close(); });
         m_acceptorThread.join();
     }
 

@@ -124,7 +124,7 @@ class WorldSocket : public MaNGOS::Socket
         bool HandlePing(WorldPacket &recvPacket);
 
     public:
-        WorldSocket(boost::asio::io_service &service, std::function<void (Socket *)> closeHandler);
+        WorldSocket(boost::asio::io_context& context, std::function<void (Socket *)> closeHandler);
 
         // send a packet \o/
         void SendPacket(const WorldPacket& pct, bool immediate = false);

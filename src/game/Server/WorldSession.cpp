@@ -1057,7 +1057,7 @@ void WorldSession::SetPlayer(Player* plr)
 
 void WorldSession::SendRedirectClient(std::string& ip, uint16 port)
 {
-    const uint32 ip2 = static_cast<uint32>(boost::asio::ip::address_v4::from_string(ip).to_ulong());
+    const uint32 ip2 = static_cast<uint32>(boost::asio::ip::make_address_v4(ip).to_uint());
     WorldPacket pkt(SMSG_CONNECT_TO, 4 + 2 + 4 + 20);
 
     pkt << uint32(ip2);                                     // inet_addr(ipstr)
