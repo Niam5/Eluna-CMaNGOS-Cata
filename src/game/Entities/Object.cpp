@@ -1203,22 +1203,11 @@ void Object::ForceValuesUpdateAtIndex(uint32 index)
 }
 
 WorldObject::WorldObject() :
-#ifdef BUILD_ELUNA
-    elunaEvents(nullptr),
-#endif
     m_transportInfo(nullptr), m_isOnEventNotified(false),
     m_currMap(nullptr), m_mapId(0),
     m_InstanceId(0), m_isActiveObject(false), m_phaseMask(PHASEMASK_NORMAL)
 {
 }
-
-#ifdef BUILD_ELUNA
-WorldObject::~WorldObject()
-{
-    delete elunaEvents;
-    elunaEvents = nullptr;
-}
-#endif
 
 void WorldObject::CleanupsBeforeDelete()
 {
@@ -1870,9 +1859,13 @@ void WorldObject::AddToWorld()
     Object::AddToWorld();
 
 #ifdef BUILD_ELUNA
+    // in multistate mode, always reset in case Eluna is not active on the new map
+    if (elunaEvents && !sElunaConfig->IsElunaCompatibilityMode())
+        elunaEvents.reset();
+
     if (Eluna* e = GetEluna())
         if (!elunaEvents)
-            elunaEvents = new ElunaEventProcessor(e, this);
+            elunaEvents = std::make_unique<ElunaEventProcessor>(e, this);
 #endif
 }
 
@@ -1880,16 +1873,6 @@ void WorldObject::RemoveFromWorld()
 {
     if (m_isOnEventNotified)
         m_currMap->RemoveFromOnEventNotified(this);
-
-#ifdef BUILD_ELUNA
-    // if multistate, delete elunaEvents and set to nullptr. events shouldn't move across states.
-    // in single state, the timed events should move across maps
-    if (!sElunaConfig->IsElunaCompatibilityMode())
-    {
-        delete elunaEvents;
-        elunaEvents = nullptr; // set to null in case map doesn't use eluna
-    }
-#endif
 
     Object::RemoveFromWorld();
 }

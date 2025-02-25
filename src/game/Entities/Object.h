@@ -31,6 +31,7 @@
 #include "Util/Util.h"
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaValue.h"
+#include "LuaEngine/ElunaEventMgr.h"
 #endif
 
 #include <set>
@@ -634,13 +635,11 @@ class WorldObject : public Object
                 WorldObject* const m_obj;
         };
 #ifdef BUILD_ELUNA
-        virtual ~WorldObject();
         virtual void Update(uint32 update_diff, uint32 /*time_diff*/);
 #else
-        virtual ~WorldObject() {}
         virtual void Update(uint32 /*update_diff*/, uint32 /*time_diff*/) {}
 #endif
-
+        virtual ~WorldObject() {}
         void _Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
 
         TransportInfo* GetTransportInfo() const { return m_transportInfo; }
@@ -860,7 +859,7 @@ class WorldObject : public Object
         GuidSet& GetClientGuidsIAmAt() { return m_clientGUIDsIAmAt; }
 
 #ifdef BUILD_ELUNA
-        ElunaEventProcessor* elunaEvents;
+        std::unique_ptr<ElunaEventProcessor> elunaEvents;
 
         Eluna* GetEluna() const;
 

@@ -442,7 +442,7 @@ class Map : public GridRefManager<NGridType>
         std::unordered_map<uint32, std::set<ObjectGuid>> m_spawnedCount;
 
 #ifdef BUILD_ELUNA
-        Eluna* eluna;
+        std::unique_ptr<Eluna> eluna;
 #endif
 };
 
