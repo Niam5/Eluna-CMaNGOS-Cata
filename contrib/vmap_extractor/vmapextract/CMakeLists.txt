@@ -27,7 +27,7 @@ file(GLOB vmap_extract_src
 
 add_executable(${EXECUTABLE_NAME} ${vmap_extract_src})
 
-target_link_libraries(${EXECUTABLE_NAME} stormlib)
+target_link_libraries(${EXECUTABLE_NAME} storm)
 
 if(MSVC)
   # Define OutDir to source/bin/(platform)_(configuaration) folder.

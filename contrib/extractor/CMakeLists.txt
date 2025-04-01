@@ -29,7 +29,7 @@ include_directories(${CMAKE_SOURCE_DIR}/dep/loadlib)
 
 add_executable(${EXECUTABLE_NAME} ${AD_SOURCE})
 
-target_link_libraries(${EXECUTABLE_NAME} stormlib)
+target_link_libraries(${EXECUTABLE_NAME} storm)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/dep/StormLib/src

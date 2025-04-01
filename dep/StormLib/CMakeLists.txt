@@ -1,12 +1,19 @@
 project(StormLib)
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.19)
 
-set(LIBRARY_NAME stormlib)
+set(LIBRARY_NAME storm)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CMakeDependentOption)
 
 option(BUILD_SHARED_LIBS "Compile shared libraries" OFF)
 option(STORM_SKIP_INSTALL "Skip installing files" OFF)
+option(STORM_USE_BUNDLED_LIBRARIES
+    "Force use of bundled dependencies instead of system libraries."
+    OFF
+)
 option(STORM_BUILD_TESTS
     "Compile StormLib test application" OFF
 #   "BUILD_TESTING" OFF # Stay coherent with CTest variables
@@ -57,6 +64,7 @@ set(TOMCRYPT_FILES
            src/libtomcrypt/src/hashes/hash_memory.c
            src/libtomcrypt/src/hashes/md5.c
            src/libtomcrypt/src/hashes/sha1.c
+           src/libtomcrypt/src/hashes/sha256.c
            src/libtomcrypt/src/math/ltm_desc.c
            src/libtomcrypt/src/math/multi.c
            src/libtomcrypt/src/math/rand_prime.c
@@ -253,8 +261,7 @@ set(TOMMATH_FILES
            src/libtommath/bn_s_mp_sub.c
 )
 
-# Needed for Windows
-set(ZLIB_BZIP2_FILES
+set(BZIP2_FILES
            src/bzip2/blocksort.c
            src/bzip2/bzlib.c
            src/bzip2/compress.c
@@ -262,6 +269,9 @@ set(ZLIB_BZIP2_FILES
            src/bzip2/decompress.c
            src/bzip2/huffman.c
            src/bzip2/randtable.c
+)
+
+set(ZLIB_FILES
            src/zlib/adler32.c
            src/zlib/compress.c
            src/zlib/crc32.c
@@ -278,37 +288,55 @@ set(TEST_SRC_FILES
 )
 
 add_definitions(-D_7ZIP_ST -DBZ_STRICT_ANSI)
+set(LINK_LIBS)
+
+find_package(ZLIB)
+if (ZLIB_FOUND AND NOT STORM_USE_BUNDLED_LIBRARIES)
+	set(LINK_LIBS ${LINK_LIBS} ZLIB::ZLIB)
+    add_definitions(-D__SYS_ZLIB)
+else()
+	set(SRC_FILES ${SRC_FILES} ${ZLIB_FILES})
+endif()
+
+find_package(BZip2)
+if (BZIP2_FOUND AND NOT STORM_USE_BUNDLED_LIBRARIES)
+	set(LINK_LIBS ${LINK_LIBS} BZip2::BZip2)
+    add_definitions(-D__SYS_BZLIB)
+else()
+	set(SRC_FILES ${SRC_FILES} ${BZIP2_FILES})
+endif()
 
 if(WIN32)
-    set(SRC_ADDITIONAL_FILES ${ZLIB_BZIP2_FILES} ${TOMCRYPT_FILES} ${TOMMATH_FILES})
-    set(LINK_LIBS wininet)
+    set(SRC_ADDITIONAL_FILES ${TOMCRYPT_FILES} ${TOMMATH_FILES})
+	set(LINK_LIBS ${LINK_LIBS} wininet)
 else()
-    find_package(ZLIB REQUIRED)
-    find_package(BZip2 REQUIRED)
-
-    include_directories(${ZLIB_INCLUDE_DIR} ${BZIP2_INCLUDE_DIR})
-    set(LINK_LIBS ${ZLIB_LIBRARY} ${BZIP2_LIBRARIES})
-
-    add_definitions(-D__SYS_ZLIB -D__SYS_BZLIB)
-
     option(WITH_LIBTOMCRYPT "Use system LibTomCrypt library" OFF)
     if(WITH_LIBTOMCRYPT)
-        set(LINK_LIBS ${LINK_LIBS} tomcrypt)
+        include(FindPkgConfig)
+        pkg_check_modules(PC_LIBTOMCRYPT libtomcrypt REQUIRED)
+        find_path(LIBTOMCRYPT_INCLUDE_DIR NAMES tomcrypt.h HINTS ${PC_LIBTOMCRYPT_INCLUDE_DIRS} REQUIRED)
+        find_library(LIBTOMCRYPT_LIBRARY NAMES tomcrypt HINTS ${PC_LIBTOMCRYPT_LIBRARY_DIRS} REQUIRED)
+        set(LINK_LIBS ${LINK_LIBS} ${LIBTOMCRYPT_LIBRARY})
+        include_directories(${LIBTOMCRYPT_INCLUDE_DIR})
     else()
         set(SRC_ADDITIONAL_FILES ${TOMCRYPT_FILES} ${TOMMATH_FILES})
     endif()
 endif()
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL FreeBSD)
-    message(STATUS "Using FreeBSD port")
+if(${CMAKE_SYSTEM_NAME} MATCHES "(Free|Net|Open)BSD")
+    message(STATUS "Using BSD port")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DO_LARGEFILE=0 -Dstat64=stat -Dlstat64=lstat -Dlseek64=lseek -Doff64_t=off_t -Dfstat64=fstat -Dftruncate64=ftruncate")
 endif()
 
 add_library(${LIBRARY_NAME} ${LIB_TYPE} ${SRC_FILES} ${SRC_ADDITIONAL_FILES} ${STORM_DEF_FILES})
+if(WIN32)
+    set_target_properties(${LIBRARY_NAME} PROPERTIES OUTPUT_NAME "StormLib")
+endif()
 
 target_link_libraries(${LIBRARY_NAME} ${LINK_LIBS})
+add_library(${PROJECT_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME}) # Allow users to link StormLib::storm when using add_subdirectory
 target_compile_definitions(${LIBRARY_NAME} INTERFACE STORMLIB_NO_AUTO_LINK) #CMake will take care of the linking
-target_include_directories(${LIBRARY_NAME} PUBLIC src/)
+target_include_directories(${LIBRARY_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>)
 set_target_properties(${LIBRARY_NAME} PROPERTIES PUBLIC_HEADER "src/StormLib.h;src/StormPort.h")
 if(BUILD_SHARED_LIBS)
     message(STATUS "Linking against dependent libraries dynamically")
@@ -331,12 +359,15 @@ endif()
 
 if (NOT STORM_SKIP_INSTALL)
     install(TARGETS ${LIBRARY_NAME}
+        EXPORT ${PROJECT_NAME}Config
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         FRAMEWORK DESTINATION /Library/Frameworks
         PUBLIC_HEADER DESTINATION include
         INCLUDES DESTINATION include)
+
+        install(EXPORT ${PROJECT_NAME}Config NAMESPACE ${PROJECT_NAME}:: DESTINATION share/${PROJECT_NAME})
 
         #CPack configurtion
         SET(CPACK_GENERATOR "DEB" "RPM")
@@ -367,8 +398,9 @@ if (NOT STORM_SKIP_INSTALL)
 endif()
 
 if(STORM_BUILD_TESTS)
+    find_package(ALSA REQUIRED)
     add_executable(StormLib_test ${TEST_SRC_FILES})
-    target_link_libraries(StormLib_test ${LIBRARY_NAME})
+    target_link_libraries(StormLib_test ${LIBRARY_NAME} ${ALSA_LIBRARIES})
     install(TARGETS StormLib_test RUNTIME DESTINATION bin)
 endif()
 

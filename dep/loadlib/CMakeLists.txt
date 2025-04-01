@@ -22,4 +22,4 @@ add_library(loadlib STATIC
 
 target_include_directories(loadlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(loadlib PUBLIC stormlib)
+target_link_libraries(loadlib PUBLIC storm)

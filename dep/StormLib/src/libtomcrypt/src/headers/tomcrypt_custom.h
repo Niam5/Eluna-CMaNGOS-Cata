@@ -11,13 +11,13 @@
 #define LTC_NO_ROLC
 
 #define LTC_SOURCE
+#define LTC_SHA256
 #define LTC_SHA1
 #define LTC_MD5
 #define LTC_DER
-#define LTC_RC4
 
-#define USE_LTM
 #define LTM_DESC
+#define USE_LTM
 
 /* macros for various libc functions you can change for embedded targets */
 #ifndef XMALLOC
@@ -47,25 +47,25 @@
 
 #ifndef XMEMSET
    #ifdef memset
-   #define LTC_NO_PROTOTYPES
+   #define LTC_NO_PROTOTYPES_MEMSET
    #endif
 #define XMEMSET  memset
 #endif
 #ifndef XMEMCPY
    #ifdef memcpy
-   #define LTC_NO_PROTOTYPES
+   #define LTC_NO_PROTOTYPES_MEMCPY
    #endif
 #define XMEMCPY  memcpy
 #endif
 #ifndef XMEMCMP
    #ifdef memcmp
-   #define LTC_NO_PROTOTYPES
+   #define LTC_NO_PROTOTYPES_MEMCMP
    #endif
 #define XMEMCMP  memcmp
 #endif
 #ifndef XSTRCMP
    #ifdef strcmp
-   #define LTC_NO_PROTOTYPES
+   #define LTC_NO_PROTOTYPES_STRCMP
    #endif
 #define XSTRCMP strcmp
 #endif
