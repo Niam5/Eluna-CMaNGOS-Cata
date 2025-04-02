@@ -161,7 +161,7 @@ namespace MMAP
             typedef std::vector<TaskType> TaskVec;
 
         public:
-            TaskQueue::TaskQueue(MapBuilder* mapBuilder, uint32 maxSize)
+            TaskQueue(MapBuilder* mapBuilder, uint32 maxSize)
                 : m_mapBuilder(mapBuilder), m_maxSize(maxSize) {
                 m_taskList.reserve(maxSize);
             }

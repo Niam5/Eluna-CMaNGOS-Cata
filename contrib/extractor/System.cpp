@@ -11,6 +11,8 @@
 #include "direct.h"
 #else
 #include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
 #endif
 
 #include "dbcfile.h"
@@ -18,11 +20,6 @@
 #include "adt.h"
 #include "wdt.h"
 #include <fcntl.h>
-
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
 #if defined( __GNUC__ )
 #define _open   open
 #define _close close
