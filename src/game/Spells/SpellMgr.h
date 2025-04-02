@@ -221,7 +221,7 @@ inline bool IsLootCraftingSpell(SpellEntry const* spellInfo)
     return (spellInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_CREATE_RANDOM_ITEM ||
         // different random cards from Inscription (121==Virtuoso Inking Set category) or without explicit item or explicit spells
         (spellInfo->Effect[EFFECT_INDEX_0] == SPELL_EFFECT_CREATE_ITEM_2 &&
-        (spellInfo->TotemCategory[0] != 0 || spellInfo->EffectItemType == 0 || spellInfo->Id == 62941)));
+        (spellInfo->TotemCategory[0] != 0 || spellInfo->EffectItemType[0] == 0 || spellInfo->Id == 62941)));
 }
 
 inline bool IsSpellEffectTriggerSpell(const SpellEntry* entry, SpellEffectIndex effIndex)
@@ -400,7 +400,7 @@ inline bool IsBinarySpell(SpellEntry const* spellInfo)
         effectmask |= (1 << i);
 
         bool damage = false;
-        if (!spellInfo->EffectApplyAuraName)
+        if (!spellInfo->EffectApplyAuraName[i])
         {
             // If its not an aura effect, check for damage effects
             switch (spellInfo->Effect[i])
