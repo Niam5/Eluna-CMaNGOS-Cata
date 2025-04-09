@@ -107,6 +107,34 @@ struct MapChunkHeader
     uint32 effectId;
 };
 
+#pragma pack(push, 1)
+namespace ADT
+{
+    struct MDDF
+    {
+        uint32 Id;
+        uint32 UniqueId;
+        Vec3D Position;
+        Vec3D Rotation;
+        uint16 Scale;
+        uint16 Flags;
+    };
+
+    struct MODF
+    {
+        uint32 Id;
+        uint32 UniqueId;
+        Vec3D Position;
+        Vec3D Rotation;
+        AaBox3D Bounds;
+        uint16 Flags;
+        uint16 DoodadSet;   // can be larger than number of doodad sets in WMO
+        uint16 NameSet;
+        uint16 Scale;
+    };
+}
+#pragma pack(pop)
+
 
 class ADTFile
 {

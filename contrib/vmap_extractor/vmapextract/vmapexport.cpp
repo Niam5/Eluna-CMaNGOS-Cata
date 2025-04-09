@@ -39,16 +39,13 @@
 //#pragma comment(lib, "Winmm.lib")
 
 #include <map>
+#include <unordered_map>
 
 //From Extractor
 #include "adtfile.h"
 #include "wdtfile.h"
 #include "dbcfile.h"
 #include "wmo.h"
-#include "mpqfile.h"
-
-#include "vmapexport.h"
-
 #include "vmapexport.h"
 
 //------------------------------------------------------------------------------
@@ -99,16 +96,25 @@ typedef struct
 map_id* map_ids;
 uint16* LiqType = 0;
 uint32 map_count;
-char output_path[128] = ".";
-char input_path[1024] = ".";
+char output_path[path_l] = ".";
+char input_path[path_l] = ".";
 bool hasInputPathParam = false;
+bool hasOutputPathParam = false;
 bool preciseVectorData = false;
+std::unordered_map<std::string, WMODoodadData> WmoDoodads;
 
 // Constants
 
 //static const char * szWorkDirMaps = ".\\Maps";
-const char* szWorkDirWmo = "./Buildings";
+char szWorkDirWmo[path_l + 512];
 const char* szRawVMAPMagic = "VMAPc06";
+
+std::map<std::pair<uint32, uint16>, uint32> uniqueObjectIds;
+
+uint32 GenerateUniqueObjectId(uint32 clientId, uint16 clientDoodadId)
+{
+    return uniqueObjectIds.emplace(std::make_pair(clientId, clientDoodadId), uniqueObjectIds.size() + 1).first->second;
+}
 
 bool LoadLocaleMPQFile(int locale)
 {
@@ -248,9 +254,7 @@ void LoadCommonMPQFiles(uint32 build)
             printf("Scanned %d files, found patch = %d\n", count, found);
         }
     }
-
 }
-
 
 // Local testing functions
 
@@ -277,7 +281,6 @@ void strToLower(char* str)
 void ReadLiquidTypeTableDBC()
 {
     printf("Read LiquidType.dbc file...");
-
     DBCFile dbc(LocaleMpq, "DBFilesClient\\LiquidType.dbc");
     if (!dbc.open())
     {
@@ -367,7 +370,10 @@ bool ExtractSingleWmo(std::string& fname)
         return false;
     }
     froot.ConvertToVMAPRootWmo(output);
+    WMODoodadData& doodads = WmoDoodads[plain_name];
+    std::swap(doodads, froot.DoodadData);
     int Wmo_nVertices = 0;
+    uint32 RealNbOfGroups = froot.nGroups;
     //printf("root has %d groups\n", froot->nGroups);
     if (froot.nGroups != 0)
     {
@@ -468,11 +474,7 @@ bool scan_patches(char* scanmatch, std::vector<std::string>& pArchiveNames)
         {
             sprintf(path, "%s.MPQ", scanmatch);
         }
-#ifndef _WIN32
-        if (FILE* h = fopen64(path, "rb"))
-#else
         if (FILE* h = fopen(path, "rb"))
-#endif
         {
             fclose(h);
             //matches.push_back(path);
@@ -488,6 +490,7 @@ bool processArgv(int argc, char** argv)
     bool result = true;
     hasInputPathParam = false;
     preciseVectorData = false;
+    sprintf(szWorkDirWmo, "%s", "./Buildings");
 
     for (int i = 1; i < argc; ++i)
     {
@@ -501,8 +504,24 @@ bool processArgv(int argc, char** argv)
             {
                 hasInputPathParam = true;
                 strcpy(input_path, argv[i + 1]);
-                if (input_path[strlen(input_path) - 1] != '\\' || input_path[strlen(input_path) - 1] != '/')
+                if (input_path[strlen(input_path) - 1] != '\\' && input_path[strlen(input_path) - 1] != '/')
                     strcat(input_path, "/");
+                ++i;
+            }
+            else
+            {
+                result = false;
+            }
+        }
+        else if (strcmp("-o", argv[i]) == 0)
+        {
+            if ((i + 1) < argc)
+            {
+                hasOutputPathParam = true;
+                strcpy(output_path, argv[i + 1]);
+                if (output_path[strlen(output_path) - 1] != '\\' && output_path[strlen(output_path) - 1] != '/')
+                    strcat(output_path, "/");
+                sprintf(szWorkDirWmo, "%s/Buildings", output_path);
                 ++i;
             }
             else
@@ -518,18 +537,12 @@ bool processArgv(int argc, char** argv)
         {
             preciseVectorData = true;
         }
-        else if (strcmp("-b", argv[i]) == 0)
-        {
-            if (i + 1 < argc)                            // all ok
-                CONF_TargetBuild = atoi(argv[i++ + 1]);
-        }
         else
         {
             result = false;
             break;
         }
     }
-
     if (!result)
     {
         printf("Extract for %s.\n", szRawVMAPMagic);
@@ -537,7 +550,7 @@ bool processArgv(int argc, char** argv)
         printf("   -s : (default) small size (data size optimization), ~500MB less vmap data.\n");
         printf("   -l : large size, ~500MB more vmap data. (might contain more details)\n");
         printf("   -d <path>: Path to the vector data source folder.\n");
-        printf("   -b : target build (default %u)", CONF_TargetBuild);
+        printf("   -o <path>: Path to the output folder.\n");
         printf("   -? : This message.\n");
     }
 
@@ -574,9 +587,7 @@ int main(int argc, char** argv)
         if (!stat(sdir.c_str(), &status) || !stat(sdir_bin.c_str(), &status))
         {
             printf("Your output directory seems to be polluted, please use an empty directory!\n");
-            printf("<press return to exit>");
-            char garbage[2];
-            scanf("%c", garbage);
+            fflush(stdout);
             return 1;
         }
     }

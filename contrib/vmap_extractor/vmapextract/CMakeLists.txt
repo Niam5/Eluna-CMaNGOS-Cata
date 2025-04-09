@@ -14,6 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+cmake_minimum_required (VERSION 3.5)
 set(EXECUTABLE_NAME "vmap_extractor")
 project (${EXECUTABLE_NAME})
 
@@ -27,7 +28,7 @@ file(GLOB vmap_extract_src
 
 add_executable(${EXECUTABLE_NAME} ${vmap_extract_src})
 
-target_link_libraries(${EXECUTABLE_NAME} storm)
+target_link_libraries(${EXECUTABLE_NAME} storm g3dlite)
 
 if(MSVC)
   # Define OutDir to source/bin/(platform)_(configuaration) folder.
@@ -37,11 +38,11 @@ if(MSVC)
   set_target_properties(${EXECUTABLE_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
   set_target_properties(${EXECUTABLE_NAME} PROPERTIES PROJECT_LABEL "VMapExtractor")
   set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Extractors")
-  
+
   # Add script file to dev folder
   add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different \"${CMAKE_SOURCE_DIR}/contrib/extractor_scripts/ExtractResources.sh\" \"$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>\")
 endif()
 
-install(FILES "${CMAKE_SOURCE_DIR}/contrib/extractor_scripts/ExtractResources.sh" DESTINATION ${BIN_DIR}/tools)
+install(PROGRAMS "${CMAKE_SOURCE_DIR}/contrib/extractor_scripts/ExtractResources.sh" DESTINATION ${BIN_DIR}/tools)
 install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${BIN_DIR}/tools)

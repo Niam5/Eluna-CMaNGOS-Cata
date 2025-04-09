@@ -16,10 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _CRT_SECURE_NO_WARNINGS
-
-#include "vmapexport.h"
 #include "wmo.h"
+#include "vmapexport.h"
 #include "vec3d.h"
 #include <cstdio>
 #include <cstdlib>
@@ -70,7 +68,7 @@ bool WMORoot::open()
             f.read(&nModels, 4);
             f.read(&nDoodads, 4);
             f.read(&nDoodadSets, 4);
-            f.read(&col, 4);
+            f.read(&color, 4);
             f.read(&RootWMOID, 4);
             f.read(bbcorn1, 12);
             f.read(bbcorn2, 12);
