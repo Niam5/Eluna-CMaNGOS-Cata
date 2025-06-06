@@ -1217,8 +1217,11 @@ void WorldObject::CleanupsBeforeDelete()
 #ifdef BUILD_ELUNA
 void WorldObject::Update(uint32 update_diff, uint32 /*time_diff*/)
 {
-    if (elunaEvents)
-        elunaEvents->Update(update_diff);
+    if (elunaMapEvents)
+        elunaMapEvents->Update(update_diff);
+
+    if (elunaWorldEvents)
+        elunaWorldEvents->Update(update_diff);
 }
 #endif
 
@@ -1859,13 +1862,24 @@ void WorldObject::AddToWorld()
     Object::AddToWorld();
 
 #ifdef BUILD_ELUNA
-    // in multistate mode, always reset in case Eluna is not active on the new map
-    if (elunaEvents && !sElunaConfig->IsElunaCompatibilityMode())
-        elunaEvents.reset();
+    // in multistate mode, always reset Map events, then recreate the Map events procesor
+    if (!sElunaConfig->IsElunaCompatibilityMode())
+    {
+        auto& events = GetElunaEvents(m_mapId);
+        if (events)
+            events.reset();
 
-    if (Eluna* e = GetEluna())
-        if (!elunaEvents)
-            elunaEvents = std::make_unique<ElunaEventProcessor>(e, this);
+        if (Eluna* e = m_currMap->GetEluna())
+            events = std::make_unique<ElunaEventProcessor>(e, this);
+    }
+
+    // create the World events processor
+    if (Eluna* e = sWorld.GetEluna())
+    {
+        auto& events = GetElunaEvents(-1);
+        if (!events)
+            events = std::make_unique<ElunaEventProcessor>(e, this);
+    }
 #endif
 }
 
