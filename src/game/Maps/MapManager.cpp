@@ -29,7 +29,6 @@
 
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaEngine.h"
-#include "LuaEngine/ElunaConfig.h"
 #endif
 
 #define CLASS_LOCK MaNGOS::ClassLevelLockable<MapManager, std::recursive_mutex>
@@ -56,7 +55,6 @@ void
 MapManager::Initialize()
 {
     InitStateMachine();
-
 }
 
 void MapManager::InitStateMachine()
