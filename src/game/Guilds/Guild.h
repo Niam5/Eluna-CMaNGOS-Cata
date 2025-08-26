@@ -474,7 +474,7 @@ class Guild
         void   LoadGuildBankFromDB();
         // Money deposit/withdraw
         void   SendMoneyInfo(WorldSession* session, uint32 LowGuid);
-        bool   MemberMoneyWithdraw(uint32 amount, uint32 LowGuid);
+        bool   MemberMoneyWithdraw(uint64 amount, uint32 LowGuid);
         uint64 GetGuildBankMoney() { return m_GuildBankMoney; }
         void   SetBankMoney(int64 money);
         // per days

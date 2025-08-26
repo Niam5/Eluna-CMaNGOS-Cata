@@ -1566,7 +1566,7 @@ class Player : public Unit
         uint64 GetMoney() const { return GetUInt64Value(PLAYER_FIELD_COINAGE); }
 
 #ifdef BUILD_ELUNA
-        void ModifyMoney(int32 d);
+        void ModifyMoney(int64 d);
 #else
         void ModifyMoney(int64 d)
         {

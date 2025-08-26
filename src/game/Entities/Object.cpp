@@ -1214,17 +1214,6 @@ void WorldObject::CleanupsBeforeDelete()
     RemoveFromWorld();
 }
 
-#ifdef BUILD_ELUNA
-void WorldObject::Update(uint32 update_diff, uint32 /*time_diff*/)
-{
-    if (elunaMapEvents)
-        elunaMapEvents->Update(update_diff);
-
-    if (elunaWorldEvents)
-        elunaWorldEvents->Update(update_diff);
-}
-#endif
-
 void WorldObject::_Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask)
 {
     Object::_Create(guidlow, 0, guidhigh);

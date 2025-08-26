@@ -1492,7 +1492,7 @@ void Guild::SendMoneyInfo(WorldSession* session, uint32 LowGuid)
     DEBUG_LOG("WORLD: Sent SMSG_GUILD_BANK_MONEY_WITHDRAWN");
 }
 
-bool Guild::MemberMoneyWithdraw(uint32 amount, uint32 LowGuid)
+bool Guild::MemberMoneyWithdraw(uint64 amount, uint32 LowGuid)
 {
     uint64 MoneyWithDrawRight = GetMemberMoneyWithdrawRem(LowGuid);
 

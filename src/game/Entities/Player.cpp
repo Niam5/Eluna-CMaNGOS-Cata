@@ -23255,16 +23255,16 @@ void Player::UpdateSpecCount(uint8 count)
 }
 
 #ifdef BUILD_ELUNA
-void Player::ModifyMoney(int32 d)
+void Player::ModifyMoney(int64 d)
 {
     // used by eluna
     if (Eluna* e = GetEluna())
         e->OnMoneyChanged(this, d);
 
     if (d < 0)
-        SetMoney(GetMoney() > uint32(-d) ? GetMoney() + d : 0);
+        SetMoney(GetMoney() > uint64(-d) ? GetMoney() + d : 0);
     else
-        SetMoney(GetMoney() < uint32(MAX_MONEY_AMOUNT - d) ? GetMoney() + d : MAX_MONEY_AMOUNT);
+        SetMoney(GetMoney() < uint64(MAX_MONEY_AMOUNT - d) ? GetMoney() + d : MAX_MONEY_AMOUNT);
     // "At Gold Limit"
     if (GetMoney() >= MAX_MONEY_AMOUNT)
         SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD, nullptr, nullptr);

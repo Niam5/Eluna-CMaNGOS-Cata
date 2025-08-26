@@ -634,11 +634,9 @@ class WorldObject : public Object
 
                 WorldObject* const m_obj;
         };
-#ifdef BUILD_ELUNA
-        virtual void Update(uint32 update_diff, uint32 /*time_diff*/);
-#else
+
         virtual void Update(uint32 /*update_diff*/, uint32 /*time_diff*/) {}
-#endif
+
         virtual ~WorldObject() {}
         void _Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
 
