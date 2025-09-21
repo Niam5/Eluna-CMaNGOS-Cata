@@ -27,6 +27,9 @@
 #include "Util/Timer.h"
 #include "Globals/SharedDefines.h"
 #include "Entities/Object.h"
+#ifdef BUILD_ELUNA
+#include "LuaEngine/ElunaMgr.h"
+#endif
 
 #include <set>
 #include <list>
@@ -616,8 +619,7 @@ class World
         static TimePoint GetCurrentClockTime() { return m_currentTime; }
 
 #ifdef BUILD_ELUNA
-        Eluna* GetEluna() const { return eluna.get(); }
-        std::unique_ptr<Eluna> eluna;
+        Eluna* GetEluna() const { return sElunaMgr->Get(m_elunaInfo); }
 #endif
     protected:
         void _UpdateGameTime();
@@ -725,6 +727,10 @@ class World
         std::vector<uint32> m_eventGroupChosen;
 
         static TimePoint m_currentTime;
+
+#ifdef BUILD_ELUNA
+        ElunaInfo m_elunaInfo;
+#endif
 };
 
 extern uint32 realmID;

@@ -38,6 +38,7 @@
 
 #ifdef BUILD_ELUNA
 #include "LuaEngine/LuaValue.h"
+#include "LuaEngine/ElunaMgr.h"
 #endif
 
 #include <bitset>
@@ -329,8 +330,7 @@ class Map : public GridRefManager<NGridType>
         void RemoveFromSpawnCount(const ObjectGuid & guid);
 
 #ifdef BUILD_ELUNA
-        Eluna* GetEluna() const { return eluna.get(); }
-
+        Eluna* GetEluna() const { return sElunaMgr->Get(m_elunaInfo); }
         LuaVal lua_data = LuaVal({});
 #endif
 
@@ -442,7 +442,7 @@ class Map : public GridRefManager<NGridType>
         std::unordered_map<uint32, std::set<ObjectGuid>> m_spawnedCount;
 
 #ifdef BUILD_ELUNA
-        std::unique_ptr<Eluna> eluna;
+        ElunaInfo m_elunaInfo;
 #endif
 };
 
