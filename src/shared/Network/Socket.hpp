@@ -65,7 +65,7 @@ namespace MaNGOS
 
             std::mutex m_mutex;
             std::mutex m_closeMutex;
-            boost::asio::deadline_timer m_outBufferFlushTimer;
+            boost::asio::steady_timer m_outBufferFlushTimer;
 
             void StartAsyncRead();
             void OnRead(const boost::system::error_code &error, size_t length);
