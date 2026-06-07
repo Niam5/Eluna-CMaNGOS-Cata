@@ -3,13 +3,16 @@ name: Windows Release Build
 on:
   schedule:
     # every day at 6am
-    - cron:  '0 6 * * *'
+    - cron: "0 6 * * *"
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  REPO_DIR : ${{github.workspace}}
+  REPO_DIR: ${{github.workspace}}
   BUILD_DIR: ${{github.workspace}}/bin/builddir
+  BOOST_TOOLSET: "msvc"
+  BOOST_VERSION: "1.87.0"
+  BOOST_PLATFORM_VERSION: "2022"
 
 jobs:
   build:
@@ -19,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-       include:
+        include:
           - OPTIONAL_DEFINES: ""
             TYPE: "default"
 
@@ -37,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ${{env.REPO_DIR}}
           submodules: true
@@ -47,7 +50,22 @@ jobs:
         run: |
           echo "ARCHIVE_FILENAME=$env:CI_REPOSITORY_NAME-${{matrix.TYPE}}-$env:CI_SHA_SHORT.zip" >> $env:GITHUB_ENV
           cmake -E make_directory ${{ env.BUILD_DIR }}
-          choco install boost-msvc-14.3
+
+      # install dependencies
+      - name: Install Boost
+        uses: MarkusJx/install-boost@v2.6.0
+        id: install-boost
+        with:
+          # REQUIRED: Specify the required boost version
+          # A list of supported versions can be found here:
+          # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
+          boost_version: ${{env.BOOST_VERSION}}
+          # OPTIONAL: Specify a platform version
+          platform_version: ${{env.BOOST_PLATFORM_VERSION}}
+          # OPTIONAL: Specify a toolset
+          toolset: ${{env.BOOST_TOOLSET}}
+          # NOTE: If a boost version matching all requirements cannot be found,
+          # this build step will fail
 
       - name: Configure
         env:
@@ -57,7 +75,7 @@ jobs:
       - name: Build
         env:
           MAKEFLAGS: "-j8"
-        run: cmake --build ${{env.BUILD_DIR}} --config ${{env.BUILD_TYPE}}
+        run: cmake --build ${{env.BUILD_DIR}} --config ${{env.BUILD_TYPE}} --parallel
 
       - name: Archive files
         run: |
@@ -65,7 +83,7 @@ jobs:
           7z a -tzip ${{env.ARCHIVE_FILENAME}} "x64_${{env.BUILD_TYPE}}"
 
       - name: Archive The Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: snapshot-${{matrix.TYPE}}
           path: "${{env.BUILD_DIR}}/bin/${{env.ARCHIVE_FILENAME}}"
@@ -73,50 +91,47 @@ jobs:
   upload:
     runs-on: windows-2022
     permissions:
-      contents: write  # for marvinpinto/action-automatic-releases to generate pre-release
+      contents: write # for softprops/action-gh-release to publish the release
     needs: build
 
     steps:
       - name: Download Artifact snapshot-default
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: snapshot-default
           path: all_snapshots
       - name: Download Artifact snapshot-with-all
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: snapshot-with-all
           path: all_snapshots
       - name: Download Artifact snapshot-with-eluna-playerbot-ahbot
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: snapshot-with-eluna-playerbot-ahbot
           path: all_snapshots
       - name: Download Artifact snapshot-with-eluna-playerbot
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: snapshot-with-eluna-playerbot
           path: all_snapshots
       - name: Download Artifact snapshot-with-eluna-ahbot
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: snapshot-with-eluna-ahbot
           path: all_snapshots
 
       - name: Get Current Date
         id: date
-        uses: Kaven-Universe/github-action-current-date-time@v1
-        with:
-          format: "YYYY-MM-DD"
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Upload Snapshot
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: softprops/action-gh-release@v3
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          tag_name: latest
+          name: "Development Build(${{ steps.date.outputs.date }})"
           prerelease: false
-          title: "Development Build(${{ steps.date.outputs.time }})"
-          files: all_snapshots
+          files: all_snapshots/**
 
   notify-success:
     name: Send Notification to Discord on Success
@@ -142,7 +157,7 @@ jobs:
           echo "PB_AB_ARCH_NAME=${projectNames}-with-playerbot-ahbot-${shortSHA}.zip" >> $GITHUB_ENV
 
       - name: Notify
-        uses: rjstone/discord-webhook-notify@v1.1.1
+        uses: rjstone/discord-webhook-notify@v2.2.1
         with:
           severity: info
           description: |
@@ -150,13 +165,13 @@ jobs:
           details: |
             **Branch:** ${{env.GIT_BRANCH}}
             __**Windows Prebuilt Binaries**__
-            
+
             - [Default Download](${{github.server_url}}/${{ github.repository }}/releases/download/latest/${{env.DEFAULT_ARCH_NAME}})
             - [All Options Enabled](${{github.server_url}}/${{ github.repository }}/releases/download/latest/${{env.ALL_ARCH_NAME}})
             - [AHBot Enabled](${{github.server_url}}/${{ github.repository }}/releases/download/latest/${{env.AB_ARCH_NAME}})
             - [PlayerBot Enabled](${{github.server_url}}/${{ github.repository }}/releases/download/latest/${{env.PB_ARCH_NAME}})
             - [AHBot & PlayerBot Enabled](${{github.server_url}}/${{ github.repository }}/releases/download/latest/${{env.PB_AB_ARCH_NAME}})
-            
+
             If you find any bugs or issues please report them [here](https://github.com/cmangos/issues/issues/new/choose).
           footer: Created by the CMaNGOS Team!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_RELEASE }}
@@ -177,7 +192,7 @@ jobs:
           echo "GIT_SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
 
       - name: Notify
-        uses: rjstone/discord-webhook-notify@v1.1.1
+        uses: rjstone/discord-webhook-notify@v2.2.1
         with:
           severity: error
           description: |
