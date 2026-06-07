@@ -577,6 +577,8 @@ class Spell
         uint32 GetPowerCost() const { return m_powerCost; }
         uint32 GetUsedHolyPower() const { return m_usedHolyPower; }
 
+        SpellEntry const* GetSpellProto() const { return m_spellInfo; }
+
         void UpdatePointers();                              // must be used at call Spell code after time delay (non triggered spell cast/update spell call/etc)
 
         bool CheckTargetCreatureType(Unit* target) const;
@@ -600,6 +602,7 @@ class Spell
         typedef std::list<Unit*> UnitList;
 
         MaNGOS::unique_weak_ptr<Spell> GetWeakPtr() const;
+        WeaponAttackType GetAttackType() const { return m_attackType; }
 
     protected:
         void SendLoot(ObjectGuid guid, LootType loottype, LockType lockType);

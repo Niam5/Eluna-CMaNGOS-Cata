@@ -77,6 +77,11 @@ Map::~Map()
 
     delete m_weatherSystem;
     m_weatherSystem = nullptr;
+
+#ifdef BUILD_ELUNA
+    if (GetEluna())
+        sElunaMgr->Destroy(m_elunaInfo);
+#endif
 }
 
 TimePoint Map::GetCurrentClockTime()

@@ -501,6 +501,7 @@ Aura::Aura(SpellEntry const* spellproto, SpellEffectIndex eff, int32* currentBas
 
 Aura::~Aura()
 {
+    m_scriptRef = nullptr;
 }
 
 AreaAura::AreaAura(SpellEntry const* spellproto, SpellEffectIndex eff, int32* currentBasePoints, SpellAuraHolder* holder, Unit* target,
